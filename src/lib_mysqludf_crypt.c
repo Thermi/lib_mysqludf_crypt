@@ -337,6 +337,34 @@ extern "C" {
         return 0;
     }
 
+    DLLEXP my_bool lib_mysqludf_crypt_base64_encode_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+        if (args->arg_count != 1) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_encode takes exactly one argument.\n");
+            return 1;
+        }
+        initid->ptr = malloc((args->lengths[0]*4)/3);
+        if (!initid->ptr) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_encode could allocate enough memory for the output buffer.\n");
+            return 1;
+        }
+
+        return 0;
+    }
+
+    DLLEXP my_bool lib_mysqludf_crypt_base64_decode_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+        if (args->arg_count != 1) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_decode takes exactly one argument.\n");
+            return 1;
+        }
+        initid->ptr = malloc((args->lengths[0]*3)/4);
+        if (!initid->ptr) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_encode could allocate enough memory for the output buffer.\n");
+            return 1;
+        }
+
+        return 0;
+    }
+
     DLLEXP char *lib_mysqludf_crypt_sha256(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
         char *is_null, char *error) {
         return hash_common_operation(initid, args, result, length, is_null, error);
@@ -415,7 +443,7 @@ extern "C" {
             free(data_storage->rng_structure);
             free(data_storage->output_data);
             free(data_storage);
-            *is_null = TRUE;
+            *is_null = true;
             return NULL;
         }
         botan_rng_destroy(*data_storage->rng_structure);
@@ -425,6 +453,40 @@ extern "C" {
         return result;
     }
 
+    DLLEXP char*lib_mysqludf_crypt_base64_encode(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
+        char *is_null, char *error) {
+        size_t out_length = (args->lengths[0]*4)/3;
+        int ret = botan_base64_encode(args->args[0], args->lengths[0], initid->ptr, &out_length);
+
+        if(ret) {
+            snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_encode could not encode the data. "
+                "Reported failure: %s\n", botan_error_description(ret));
+            free(initid->ptr);
+            return NULL;
+        }
+
+        *length = out_length;
+        result = initid->ptr;
+        return result;
+    }
+
+
+    DLLEXP char*lib_mysqludf_crypt_base64_decode(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
+        char *is_null, char *error) {
+        size_t out_length = (args->lengths[0]*3)/4;
+        int ret = botan_base64_decode(args->args[0], args->lengths[0], initid->ptr, &out_length);
+
+        if(ret) {
+            snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_decode could not encode the data. "
+                "Reported failure: %s\n", botan_error_description(ret));
+            free(initid->ptr);
+            return NULL;
+        }
+
+        *length = out_length;
+        result = initid->ptr;
+        return result;
+    }    
 
     /* For functions that return REAL */
     /* DLLEXP double lib_mysqludf_crypt_info(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error); */
