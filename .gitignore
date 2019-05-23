@@ -45,6 +45,8 @@
 # Intermediate generated files
 *.in
 
+# Build files
+*.deps
 # Kernel Module Compile Results
 *.mod*
 *.cmd
