@@ -42,6 +42,9 @@
 *.idb
 *.pdb
 
+# Intermediate generated files
+*.in
+
 # Kernel Module Compile Results
 *.mod*
 *.cmd
