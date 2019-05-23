@@ -486,7 +486,7 @@ extern "C" {
         *length = out_length;
         result = initid->ptr;
         return result;
-    }    
+    }
 
     /* For functions that return REAL */
     /* DLLEXP double lib_mysqludf_crypt_info(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error); */
