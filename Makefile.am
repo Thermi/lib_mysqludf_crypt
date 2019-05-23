@@ -5,7 +5,7 @@ AM_CFLAGS = -Wall -Werr -DSTANDARD -DMYSQL_SERVER @MYSQL_CFLAGS@
 AM_CXXFLAGS = -DSTANDARD -DMYSQL_SERVER @MYSQL_CFLAGS@
 AM_LDFLAGS = -module -avoid-version -no-undefined -rpath @MYSQL_PLUGINDIR@
 
-EXTRA_DIST = *.h *.sql
+EXTRA_DIST = *.h
 SUBDIRS = test src
 
 mrproper:
@@ -22,8 +22,7 @@ uninstalldb:
 dist-hook:
 	find $(distdir) -name .svn -o -name .git* -o -name .c9* -o -name .DS_Store -o -name .cdtproject -o -name .project -o -name .settings -o *~ | xargs --no-run-if-empty rm -rf
 
-maintainer-dist:
-	make dist
+maintainer-dist: dist
 	git tag "$(VERSION)"
 
 maintainer-diff:

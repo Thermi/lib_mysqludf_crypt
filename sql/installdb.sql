@@ -1,18 +1,19 @@
 USE mysql;
 
 DROP FUNCTION IF EXISTS lib_mysqludf_crypt_info;
-DROP FUNCTION IF EXISTS sha256;
-DROP FUNCTION IF EXISTS sha384;
-DROP FUNCTION IF EXISTS sha512;
-DROP FUNCTION IF EXISTS sha3;
-DROP FUNCTION IF EXISTS blake2;
-DROP FUNCTION IF EXISTS argon2;
-DROP FUNCTION IF EXISTS scrypt;
+DROP FUNCTION IF EXISTS lib_mysqludf_crypt_sha256;
+DROP FUNCTION IF EXISTS lib_mysqludf_crypt_sha384;
+DROP FUNCTION IF EXISTS lib_mysqludf_crypt_sha512;
+DROP FUNCTION IF EXISTS lib_mysqludf_crypt_sha3;
+DROP FUNCTION IF EXISTS lib_mysqludf_crypt_blake2;
+DROP FUNCTION IF EXISTS lib_mysqludf_crypt_argon2;
+DROP FUNCTION IF EXISTS lib_mysqludf_crypt_scrypt;
 
-CREATE FUNCTION sha256 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
-CREATE FUNCTION sha384 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
-CREATE FUNCTION sha512 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
-CREATE FUNCTION sha3 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
-CREATE FUNCTION blake2 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
-CREATE FUNCTION argon2 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
-CREATE FUNCTION scrypt RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE FUNCTION lib_mysqludf_crypt_sha256 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE FUNCTION lib_mysqludf_crypt_sha384 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE FUNCTION lib_mysqludf_crypt_sha512 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE FUNCTION lib_mysqludf_crypt_sha3   RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE FUNCTION lib_mysqludf_crypt_blake2 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE FUNCTION lib_mysqludf_crypt_argon2 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE FUNCTION lib_mysqludf_crypt_scrypt RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE FUNCTION lib_mysqludf_crypt_constant_time_compare RETURNS INT SONAME 'lib_mysqludf_crypt.so';

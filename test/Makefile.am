@@ -17,12 +17,12 @@ MYSQLTEST_ARGS= --include=create_testdb.sql  --result-file=$*.result
 mysqltest:
 	@if test -z "$(MYSQLTEST)" ; then echo "mysqltest not found"; exit 1; fi
 
-.result.test : *.test
+.result : *.test
 	$(MYSQLTEST) $(MYSQLTEST_ARGS) --record < $*.test
 
 .run : *.test
 	$(MYSQLTEST) $(MYSQLTEST_ARGS) < $*.test
 
-results : mysqltest $(ALL_TESTS:*.test=*.result)
+results : mysqltest $(ALL_TESTS:*.test=.result)
 
-test: mysqltest $(ALL_TESTS:*.test=*.run)
+*.test: mysqltest $(ALL_TESTS:*.test=*.run)

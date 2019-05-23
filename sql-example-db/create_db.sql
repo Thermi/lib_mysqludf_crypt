@@ -71,36 +71,36 @@ END
 
 DELIMITER //
 CREATE FUNCTION UDF_SHA256(VARCHAR2 salt, VARCHAR2 password) RETURNS VARCHAR2 DETERMINISTIC RETURN
-RETURN lib_mysqludf_sha256(CONCAT(salt, password));
+RETURN lib_mysqludf_crypt_sha256(CONCAT(salt, password));
 END
 //
 DELIMITER //
 CREATE FUNCTION UDF_SHA384(VARCHAR2 salt, VARCHAR2 password) RETURNS VARCHAR2 DETERMINISTIC RETURN
-RETURN lib_mysqludf_sha384(CONCAT(salt, password));
+RETURN lib_mysqludf_crypt_sha384(CONCAT(salt, password));
 END
 //
 DELIMITER //
 CREATE FUNCTION UDF_SHA512(VARCHAR2 salt, VARCHAR2 password) RETURNS VARCHAR2 DETERMINISTIC RETURN
-RETURN lib_mysqludf_sha512(CONCAT(salt, password));
+RETURN lib_mysqludf_crypt_sha512(CONCAT(salt, password));
 END
 //
 DELIMITER //
 CREATE FUNCTION UDF_SHA3(VARCHAR2 salt, VARCHAR2 password) RETURNS VARCHAR2 DETERMINISTIC RETURN
-RETURN lib_mysqludf_sha3(CONCAT(salt, password));
+RETURN lib_mysqludf_crypt_sha3(CONCAT(salt, password));
 END
 //
 DELIMITER //
 CREATE FUNCTION UDF_BLAKE2(VARCHAR2 salt, VARCHAR2 password) RETURNS VARCHAR2 DETERMINISTIC RETURN
-RETURN lib_mysqludf_blake2(CONCAT(salt, password));
+RETURN lib_mysqludf_crypt_blake2(CONCAT(salt, password));
 END
 //
 DELIMITER //
 CREATE FUNCTION UDF_ARGON2(VARCHAR2 salt, VARCHAR2 password) RETURNS VARCHAR2 DETERMINISTIC RETURN
-RETURN lib_mysqludf_argon2(CONCAT(salt, password));
+RETURN lib_mysqludf_crypt_argon2(CONCAT(salt, password));
 END
 //
 DELIMITER //
 CREATE FUNCTION UDF_SCRYPT(VARCHAR2 salt, VARCHAR2 password) RETURNS VARCHAR2 DETERMINISTIC RETURN
-RETURN lib_mysqludf_scrypt(CONCAT(salt, password));
+RETURN lib_mysqludf_crypt_scrypt(CONCAT(salt, password));
 END
 //

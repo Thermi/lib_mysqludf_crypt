@@ -148,20 +148,20 @@ extern "C" {
     static char *hash_common_operation(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
                                         char *is_null, char *error) {
         struct data_storage *pointers = (struct data_storage *) initid->ptr;
-        botan_hash_t botan_hash_structure = *pointers->hash_structure;
+        botan_hash_t *botan_hash_structure = pointers->hash_structure;
         void *output_buffer = pointers->output_data;
 
-        botan_hash_output_length(botan_hash_structure, length);
+        botan_hash_output_length(*botan_hash_structure, length);
         /* put data into hash */
 
         /* Output aggregate result */
-        botan_hash_update(botan_hash_structure, args->args[0], args->lengths[0]);
-        botan_hash_final(botan_hash_structure, output_buffer);
+        botan_hash_update(*botan_hash_structure, args->args[0], args->lengths[0]);
+        botan_hash_final(*botan_hash_structure, output_buffer);
 
         result = output_buffer;
 
         /* deinit */
-        botan_hash_destroy(botan_hash_structure);
+        botan_hash_destroy(*botan_hash_structure);
         free(botan_hash_structure);
         free(pointers);
         return result;
@@ -243,6 +243,10 @@ extern "C" {
         // return hash_scrypt_init(initid, args, message);
     }
 
+    DLLEXP my_bool lib_mysqludf_crypt_constant_time_compare_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+        return 0;
+    }
+
     DLLEXP char *lib_mysqludf_crypt_sha256(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
         char *is_null, char *error) {
         return hash_common_operation(initid, args, result, length, is_null, error);
@@ -271,12 +275,14 @@ extern "C" {
 
     DLLEXP char *lib_mysqludf_crypt_argon2(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
         char *is_null, char *error) {
-        return hash_argon2_operation(initid, args, result, length, is_null, error);
+        return NULL;
+        /* return hash_argon2_operation(initid, args, result, length, is_null, error); */
     }
 
     DLLEXP char *lib_mysqludf_crypt_scrypt(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
         char *is_null, char *error) {
-        return hash_scrypt_operation(initid, args, result, length, is_null, error);
+        return NULL;
+        /* return hash_scrypt_operation(initid, args, result, length, is_null, error); */
     }
 
     DLLEXP long long lib_mysqludf_crypt_constant_time_compare(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
