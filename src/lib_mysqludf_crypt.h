@@ -49,6 +49,10 @@ typedef long long longlong;
 #define LIB_MYSQLUDF_CRYPT_PROVIDER_ENV "LIB_MYSQLUDF_CRYPT_PROVIDER"
 #endif
 
+#ifndef LIBMYSQLUDF_CRYPT_VERSION
+#define LIBMYSQLUDF_CRYPT_VERSION "0.0.0"
+#endif
+
 #include "src/mysqludf.h"
 
 /* Right now only botan is supported because the API of openssl is stupid
@@ -71,8 +75,14 @@ enum lib_mysqludf_crypt_hashes {
     SCRPYT
 };
 
-struct data_storage {
+struct hash_data_storage {
     botan_hash_t *hash_structure;
+    void *output_data;
+};
+
+struct rng_data_storage {
+    botan_rng_t *rng_structure;
+    uint64_t output_data_length;
     void *output_data;
 };
 

@@ -8,7 +8,7 @@ pkgdesc="MySQL user defined functions for cryptography + SQL wrappers"
 license=("GPL")
 arch=('i686' 'x86_64')
 depends=(mariadb)
-
+options=(!strip debug libtool)
 source=(libmysqludf-crypt.tar.gz)
 sha256sums=('SKIP')
 

@@ -34,13 +34,19 @@
 
 /*
  * The lib supports the following hash algorithms:
-   * SHA2-56
+   * SHA2-256
    * SHA2-384
    * SHA2-512
    * SHA3
    * BLAKE2
    * ARGON2
    * SCRPYT
+ */
+
+/*
+ * TODO:
+ * - Implement the MSCHAPv2 hand shake and expose function to check challenge and response against stored password
+ *   - Requires DES and MD4 (Do not expose those to the user)
  */
 
 /* For Windows, define PACKAGE_STRING in the VS project */
@@ -147,7 +153,7 @@ extern "C" {
 
     static char *hash_common_operation(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
                                         char *is_null, char *error) {
-        struct data_storage *pointers = (struct data_storage *) initid->ptr;
+        struct hash_data_storage *pointers = (struct hash_data_storage *) initid->ptr;
         botan_hash_t *botan_hash_structure = pointers->hash_structure;
         void *output_buffer = pointers->output_data;
 
@@ -178,33 +184,42 @@ extern "C" {
 
         /* Check number of args (must be one) */
         if (args->arg_count != 1) {
-            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_%s requires exactly one argument.\n", hash_udf_name);
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_%s requires exactly one argument.\n",
+                hash_udf_name);
+            free(hash_udf_name);
             return 1;
         }
 
         /* allocate and init hashing structure */
         botan_hash_t *hash_structure = malloc(sizeof(botan_hash_t));
-        if(hash_structure == NULL) {
-            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_%s could not allocate enough memory for the hash structure.\n", hash_udf_name);
+        if(!hash_structure) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_%s could not allocate enough memory for the hash structure.\n",
+                hash_udf_name);
+            free(hash_udf_name);
             return 1;
         }
         ret = botan_hash_init(hash_structure, hash_name, 0);
         if (ret) {
             snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_%s could not initialize the hash structure. "
                 "Reported failure: %s\n", hash_udf_name, botan_error_description(ret));
+            free(hash_udf_name);
             return 1;
         }
         botan_hash_output_length(*hash_structure, &length);
         char *output_data = malloc(length);
         if (!output_data) {
-            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_%s could not initialize the buffer for the result.\n", hash_udf_name);
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_%s could not initialize the buffer for the result.\n",
+                hash_udf_name);
+            free(hash_udf_name);
             return 1;
         }
-        struct data_storage *data_storage = malloc(sizeof(void *)*2);
-        initid->ptr = (void *) data_storage;
+        struct hash_data_storage *hash_data_storage = malloc(sizeof(void *)*2);
+        hash_data_storage->hash_structure = hash_structure;
+        hash_data_storage->output_data = output_data;
 
+        initid->ptr = (void *) hash_data_storage;
 
-        return 0;        
+        return 0;      
     }
 
     DLLEXP my_bool lib_mysqludf_crypt_sha256_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
@@ -227,7 +242,7 @@ extern "C" {
         return hash_common_init("SHA-1", initid, args, message);
     }
 
-    DLLEXP my_bool lib_mysqludf_crypt_blake2_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+    DLLEXP my_bool lib_mysqludf_crypt_blake2b_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
         return hash_common_init("BLAKE2b", initid, args, message);
     }
 
@@ -244,6 +259,81 @@ extern "C" {
     }
 
     DLLEXP my_bool lib_mysqludf_crypt_constant_time_compare_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+        return 0;
+    }
+
+    DLLEXP my_bool lib_mysqludf_crypt_random_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+        uint64_t bytes_to_request = 8;
+        int ret;
+
+        struct rng_data_storage *rng_data_storage;
+
+        if (args->arg_count > 1) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random_init takes at most one argument.\n");
+            return 1;
+        }
+
+        if(args->arg_count == 1) {
+            if (args->arg_type[0] == INT_RESULT) {
+                if (!scanf("%ld", &bytes_to_request)) {
+                    snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random_init failed to parse the first argument as 64 bit integer.\n");
+                    return 1;
+                }
+            } else {
+                snprintf(message, MYSQL_ERRMSG_SIZE, "The first argument to lib_mysqludf_crypt_random has to be of type INT.\n");
+                return 1;
+            }
+        }
+
+        /* Allocate memory for structures */
+
+        rng_data_storage = malloc(sizeof(rng_data_storage));
+
+        if (!rng_data_storage) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not allocate enough memory for the data storage structure.\n");
+            return 1;
+        }
+
+        rng_data_storage->rng_structure = malloc(sizeof(botan_rng_t));
+
+        if (!rng_data_storage->rng_structure) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not allocate enough memory for the rng structure.\n");
+            free(rng_data_storage);
+            return 1;
+        }
+
+        ret = botan_rng_init(rng_data_storage->rng_structure, NULL);
+
+        if(ret) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not initialize the rng structure. "
+                "Reported failure: %s\n", botan_error_description(ret));
+            free(rng_data_storage->rng_structure);
+            free(rng_data_storage);
+            return 1;
+        }
+
+        /* Allocate memory for output buffer */
+        rng_data_storage->output_data = malloc(bytes_to_request);
+
+        if(!rng_data_storage) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could allocate enough memory for the output buffer.\n");
+            free(rng_data_storage->rng_structure);
+            free(rng_data_storage);
+            return 1;            
+        }
+
+        rng_data_storage->output_data_length = bytes_to_request;
+
+        /* initid->ptr should ideally be of void*, but nooo, the devs made it a char*. */
+        initid->ptr = (char *)rng_data_storage;
+        return 0;
+    }
+
+    DLLEXP my_bool lib_mysqludf_crypt_info_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
+        if (args->arg_count) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_info does not take any arguments.\n");
+            return 1;
+        }
         return 0;
     }
 
@@ -306,6 +396,35 @@ extern "C" {
         /* Use botan_constant_time_compare instead */
         return (long long) constant_time_compare(args->args[0], args->args[1], args->lengths[0], args->lengths[1]);
     }
+
+    DLLEXP char* lib_mysqludf_crypt_info(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
+        char *return_message = malloc(strlen(LIBMYSQLUDF_CRYPT_VERSION)+1);
+        strncpy(return_message, LIBMYSQLUDF_CRYPT_VERSION, strlen(LIBMYSQLUDF_CRYPT_VERSION)+1);
+        return return_message;
+    }
+
+    DLLEXP char *lib_mysqludf_crypt_random(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
+        char *is_null, char *error) {
+        struct rng_data_storage *data_storage = (struct rng_data_storage *) initid->ptr;
+
+        int ret = botan_rng_get(*data_storage->rng_structure, data_storage->output_data, data_storage->output_data_length);
+        if(ret) {
+            snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not get random data from the rng. "
+                "Reported failure: %s\n", botan_error_description(ret));
+            botan_rng_destroy(*data_storage->rng_structure);
+            free(data_storage->rng_structure);
+            free(data_storage->output_data);
+            free(data_storage);
+            *is_null = TRUE;
+            return NULL;
+        }
+        botan_rng_destroy(*data_storage->rng_structure);
+        *length = data_storage->output_data_length;
+        result = data_storage->output_data;
+        free(data_storage);
+        return result;
+    }
+
 
     /* For functions that return REAL */
     /* DLLEXP double lib_mysqludf_crypt_info(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error); */
