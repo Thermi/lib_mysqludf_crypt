@@ -31,15 +31,9 @@ ARGON2 and SCRYPT are not provided by botan, so external libraries have to be us
 
 In the future, support for OpenSSL will probably be added at some point. The API to it is difficult to use from a UDF though, because there is no memory section passed between invocations of the UDFs, so everything would need to be done using gobal variables and that sucks.
 
-#### Example Database
-
-The library ships with an example database that shows the usage of the functions in a scenario where hashing and password authentication is done by the SQL server in order to prevent any other application from reading the secrets.
-
-It can be found in the `sql-example-db` directory.
-
 ##### Functions
 
-###### C functions provided directly to the SQL server
+###### C Functions Provided Directly To The SQL Server
 
 * lib_mysqludf_crypt_sha256
 * lib_mysqludf_crypt_sha384
@@ -49,3 +43,28 @@ It can be found in the `sql-example-db` directory.
 * lib_mysqludf_crypt_constant_time_compare
 * lib_mysqludf_crypt_base64_encode
 * lib_mysqludf_crypt_base64_decode
+
+#### Example Database
+
+The library ships with an example database that shows the usage of the functions in a scenario where hashing and password authentication is done by the SQL server in order to prevent any other application from reading the secrets.
+
+It can be found in the `sql-example-db` directory.
+
+##### Functions In The Example Database
+
+* change_password
+* set_password
+* check_password
+* add_email
+* MYSQLUDF_CRYPT_MULTIHASH
+* UDF_SHA1
+* UDF_SHA256
+* UDF_SHA384
+* UDF_SHA512
+* UDF_SHA3
+* UDF_BLAKE2B
+* UDF_ARGON2
+* UDF_SCRYPT
+* UDF_RAND
+* UDF_BASE64_ENCODE
+* UDF_BASE64_DECODE
