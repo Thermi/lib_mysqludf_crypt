@@ -41,7 +41,6 @@ It can be found in the `sql-example-db` directory.
 
 ###### C functions provided directly to the SQL server
 
-
 * lib_mysqludf_crypt_sha256
 * lib_mysqludf_crypt_sha384
 * lib_mysqludf_crypt_sha512
