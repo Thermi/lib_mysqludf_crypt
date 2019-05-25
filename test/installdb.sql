@@ -4,8 +4,10 @@ CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_sha256 RETURNS STRING SONAME 'lib_
 CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_sha384 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
 CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_sha512 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
 CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_sha3   RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
-CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_blake2 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_blake2b RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
 CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_argon2 RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
 CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_scrypt RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
 CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_constant_time_compare RETURNS INT SONAME 'lib_mysqludf_crypt.so';
-CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_random RETURNS INT SONAME 'lib_mysqludf_crypt.so';
+CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_random RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_base64_encode RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_base64_decode RETURNS STRING SONAME 'lib_mysqludf_crypt.so';

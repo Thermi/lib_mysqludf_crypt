@@ -391,7 +391,7 @@ extern "C" {
         return hash_common_operation(initid, args, result, length, is_null, error);
     }
 
-    DLLEXP char *lib_mysqludf_crypt_blake2(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
+    DLLEXP char *lib_mysqludf_crypt_blake2b(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
         char *is_null, char *error) {
         return hash_common_operation(initid, args, result, length, is_null, error);
     }

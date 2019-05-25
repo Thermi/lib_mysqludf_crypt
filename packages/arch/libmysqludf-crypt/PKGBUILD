@@ -1,7 +1,7 @@
 # Maintainer: Thermi <noel [at] familie-kuntze dot com>
 
 pkgname=libmysqludf-crypt
-pkgver=0.0
+pkgver=0.0.1
 pkgrel=1
 pkgdesc="MySQL user defined functions for cryptography + SQL wrappers"
 #url='http://sourceforge.net/projects/crconf/'
@@ -9,16 +9,16 @@ license=("GPL")
 arch=('i686' 'x86_64')
 depends=(mariadb)
 options=(!strip debug libtool)
-source=(libmysqludf-crypt.tar.gz)
+source=(lib_mysqludf_crypt-${pkgver}.tar.gz)
 sha256sums=('SKIP')
 
 build() {
-  cd "lib_mysqludf_crypt"
+  cd "lib_mysqludf_crypt-${pkgver}"
   ./configure --prefix=/usr
   make
 }
 
 package() {
-  cd "lib_mysqludf_crypt"
+  cd "lib_mysqludf_crypt-${pkgver}"
   make SBINDIR=/usr/bin DESTDIR=${pkgdir} install
 }

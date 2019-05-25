@@ -53,7 +53,7 @@ typedef long long longlong;
 #define LIBMYSQLUDF_CRYPT_VERSION "0.0.0"
 #endif
 
-#include "src/mysqludf.h"
+#include "mysqludf.h"
 
 /* Right now only botan is supported because the API of openssl is stupid
  * and gnutls doesn't have any API for the primitives yet
