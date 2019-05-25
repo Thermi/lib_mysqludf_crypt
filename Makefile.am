@@ -6,7 +6,7 @@ AM_CXXFLAGS = -DSTANDARD -DMYSQL_SERVER @MYSQL_CFLAGS@
 AM_LDFLAGS = -module -avoid-version -no-undefined -rpath @MYSQL_PLUGINDIR@
 
 EXTRA_DIST = *.h
-SUBDIRS = src
+SUBDIRS = src test
 
 mrproper:
 	make clean

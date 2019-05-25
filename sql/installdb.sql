@@ -22,4 +22,6 @@ CREATE FUNCTION lib_mysqludf_crypt_argon2 RETURNS STRING SONAME 'lib_mysqludf_cr
 CREATE FUNCTION lib_mysqludf_crypt_scrypt RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
 CREATE FUNCTION lib_mysqludf_crypt_constant_time_compare RETURNS INT SONAME 'lib_mysqludf_crypt.so';
 CREATE FUNCTION lib_mysqludf_crypt_random RETURNS INT SONAME 'lib_mysqludf_crypt.so';
+CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_base64_encode RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
+CREATE OR REPLACE FUNCTION lib_mysqludf_crypt_base64_decode RETURNS STRING SONAME 'lib_mysqludf_crypt.so';
 COMMIT;

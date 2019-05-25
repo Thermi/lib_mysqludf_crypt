@@ -55,3 +55,12 @@ modules.order
 Module.symvers
 Mkfile.old
 dkms.conf
+
+# temporary files in tests/
+mysqld_base_dir
+curr_systemd_unit
+mysql-bin.index
+mariadb_start_args.conf
+testing_defaults.conf
+
+Makefile
