@@ -78,3 +78,4 @@ autom4te.cache
 packages/arch/libmysqludf-crypt/pkg
 packages/arch/libmysqludf-crypt/src
 .libs
+test/*.log
