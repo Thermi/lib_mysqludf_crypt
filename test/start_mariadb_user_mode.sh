@@ -41,8 +41,9 @@ myisam_sort_buffer_size = 8M
 max_connections = 1024
 thread_concurrency = 8
 skip-networking
-binlog_format=mixed
+binlog-format=mixed
 log-bin=mysql-bin
+
 _EOF
 }
 function error() {
