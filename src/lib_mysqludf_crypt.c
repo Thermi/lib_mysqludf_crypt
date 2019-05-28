@@ -275,10 +275,7 @@ extern "C" {
 
         if(args->arg_count == 1) {
             if (args->arg_type[0] == INT_RESULT) {
-                if (!sscanf(args->args[0], "%ld", &bytes_to_request)) {
-                    snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random_init failed to parse the first argument as 64 bit integer.\n");
-                    return 1;
-                }
+                bytes_to_request = *args->args[0];
             } else {
                 snprintf(message, MYSQL_ERRMSG_SIZE, "The first argument to lib_mysqludf_crypt_random has to be of type INT.\n");
                 return 1;
@@ -317,9 +314,9 @@ extern "C" {
         }
 
         /* Allocate memory for output buffer */
-        rng_data_storage->output_data = malloc(bytes_to_request);
+        rng_data_storage->output_data = malloc(sizeof(char)*bytes_to_request);
 
-        if(!rng_data_storage) {
+        if(!rng_data_storage->output_data) {
             snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could allocate enough memory for the output buffer.\n");
             free(rng_data_storage->rng_structure);
             free(rng_data_storage);
