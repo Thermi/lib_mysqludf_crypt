@@ -287,7 +287,7 @@ extern "C" {
 
         if (!bytes_to_request) {
                 snprintf(message, MYSQL_ERRMSG_SIZE, "You can not request 0 bytes of randomness.\n");
-                return 1;            
+                return 1;
         }
         /* Allocate memory for structures */
 
