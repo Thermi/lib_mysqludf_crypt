@@ -164,11 +164,17 @@ extern "C" {
         botan_hash_update(*botan_hash_structure, args->args[0], args->lengths[0]);
         botan_hash_final(*botan_hash_structure, output_buffer);
 
-        result = output_buffer;
+        botan_hex_encode(output_buffer, *length, pointers->hex_data, 0);
+
+        /* two times because of hex encoding*/
+        //(*length) *= 2;
+
+        result = pointers->hex_data;
 
         /* deinit */
         botan_hash_destroy(*botan_hash_structure);
         free(botan_hash_structure);
+        free(output_buffer);
         free(pointers);
         return result;
     }
@@ -207,15 +213,26 @@ extern "C" {
         }
         botan_hash_output_length(*hash_structure, &length);
         char *output_data = malloc(length);
+
         if (!output_data) {
             snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_%s could not initialize the buffer for the result.\n",
                 hash_udf_name);
             free(hash_udf_name);
             return 1;
         }
+
+        char *hex_data = malloc(length*2);
+        if (!hex_data) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_%s could not initialize the hex buffer for the result.\n",
+                hash_udf_name);
+            free(hash_udf_name);
+            return 1;
+        }
+
         struct hash_data_storage *hash_data_storage = malloc(sizeof(void *)*2);
         hash_data_storage->hash_structure = hash_structure;
         hash_data_storage->output_data = output_data;
+        hash_data_storage->hex_data = hex_data;
 
         initid->ptr = (void *) hash_data_storage;
 
@@ -275,7 +292,7 @@ extern "C" {
 
         if(args->arg_count == 1) {
             if (args->arg_type[0] == INT_RESULT) {
-                bytes_to_request = *args->args[0];
+                bytes_to_request = *(int *) (args->args[0]);
             } else {
                 snprintf(message, MYSQL_ERRMSG_SIZE, "The first argument to lib_mysqludf_crypt_random has to be of type INT.\n");
                 return 1;
@@ -295,32 +312,33 @@ extern "C" {
             return 1;
         }
 
-        rng_data_storage->rng_structure = malloc(sizeof(botan_rng_t));
-
-        if (!rng_data_storage->rng_structure) {
-            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not allocate enough memory for the rng structure.\n");
-            free(rng_data_storage);
-            return 1;
-        }
-
-        ret = botan_rng_init(rng_data_storage->rng_structure, NULL);
+        ret = botan_rng_init(&rng_data_storage->rng_structure, "user");
 
         if(ret) {
-            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not initialize the rng structure. "
-                "Reported failure: %s\n", botan_error_description(ret));
-            free(rng_data_storage->rng_structure);
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not initialize the rng structure: "
+                "%s\n", botan_error_description(ret));
             free(rng_data_storage);
             return 1;
         }
 
         /* Allocate memory for output buffer */
-        rng_data_storage->output_data = malloc(sizeof(char)*bytes_to_request);
+        rng_data_storage->output_data = malloc(sizeof(char)*bytes_to_request*2);
 
         if(!rng_data_storage->output_data) {
-            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could allocate enough memory for the output buffer.\n");
-            free(rng_data_storage->rng_structure);
+            botan_rng_destroy(rng_data_storage->rng_structure);
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not allocate enough memory (%lu bytes )for the random data buffer.\n",
+                bytes_to_request);
             free(rng_data_storage);
-            return 1;            
+            return 1;
+        }
+
+        rng_data_storage->hex_buffer = malloc(sizeof(char)*bytes_to_request*2);
+
+        if (!rng_data_storage->hex_buffer) {
+            botan_rng_destroy(rng_data_storage->rng_structure);
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not allocate enough memory for the output buffer.\n");
+            free(rng_data_storage);
+            return 1;
         }
 
         rng_data_storage->output_data_length = bytes_to_request;
@@ -440,21 +458,32 @@ extern "C" {
     DLLEXP char *lib_mysqludf_crypt_random(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
         char *is_null, char *error) {
         struct rng_data_storage *data_storage = (struct rng_data_storage *) initid->ptr;
-
-        int ret = botan_rng_get(*data_storage->rng_structure, data_storage->output_data, data_storage->output_data_length);
+        int ret = botan_rng_get(data_storage->rng_structure, data_storage->output_data, data_storage->output_data_length);
         if(ret) {
             snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not get random data from the rng. "
                 "Reported failure: %s\n", botan_error_description(ret));
-            botan_rng_destroy(*data_storage->rng_structure);
-            free(data_storage->rng_structure);
+            botan_rng_destroy(data_storage->rng_structure);
             free(data_storage->output_data);
             free(data_storage);
             *is_null = true;
             return NULL;
         }
-        botan_rng_destroy(*data_storage->rng_structure);
-        *length = data_storage->output_data_length;
-        result = data_storage->output_data;
+        botan_rng_destroy(data_storage->rng_structure);
+        /* probably should hex encode the output, so it's always a valid string */
+        ret = botan_hex_encode(data_storage->output_data, data_storage->output_data_length, data_storage->hex_buffer, 0);
+
+        free(data_storage->output_data);
+
+        if (ret) {
+            snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not hex encode the string: %s",
+                botan_error_description(ret));
+            free(data_storage->hex_buffer);
+            *is_null = true;
+            return NULL;
+        }
+
+        *length = data_storage->output_data_length*2;
+        result = data_storage->hex_buffer;
         free(data_storage);
         return result;
     }
@@ -483,7 +512,7 @@ extern "C" {
         int ret = botan_base64_decode(args->args[0], args->lengths[0], initid->ptr, &out_length);
 
         if(ret) {
-            snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_decode could not encode the data. "
+            snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_decode could not decode the data. "
                 "Reported failure: %s\n", botan_error_description(ret));
             free(initid->ptr);
             return NULL;

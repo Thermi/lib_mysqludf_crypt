@@ -44,6 +44,7 @@ typedef long long longlong;
 
 #include "config.h"
 #include <botan/ffi.h>
+#include <syslog.h>
 
 #ifndef LIB_MYSQLUDF_CRYPT_PROVIDER_ENV
 #define LIB_MYSQLUDF_CRYPT_PROVIDER_ENV "LIB_MYSQLUDF_CRYPT_PROVIDER"
@@ -78,12 +79,14 @@ enum lib_mysqludf_crypt_hashes {
 struct hash_data_storage {
     botan_hash_t *hash_structure;
     void *output_data;
+    void *hex_data;
 };
 
 struct rng_data_storage {
-    botan_rng_t *rng_structure;
+    botan_rng_t rng_structure;
     uint64_t output_data_length;
     void *output_data;
+    void *hex_buffer;
 };
 
 #endif /* MYSQLUDF_CRYPT_H_ */
