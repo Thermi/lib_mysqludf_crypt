@@ -326,7 +326,7 @@ extern "C" {
 
         if(!rng_data_storage->output_data) {
             botan_rng_destroy(rng_data_storage->rng_structure);
-            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not allocate enough memory (%lu bytes )for the random data buffer.\n",
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not allocate enough memory for the random data buffer.\n",
                 bytes_to_request);
             free(rng_data_storage);
             return 1;

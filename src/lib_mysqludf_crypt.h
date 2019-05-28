@@ -44,7 +44,6 @@ typedef long long longlong;
 
 #include "config.h"
 #include <botan/ffi.h>
-#include <syslog.h>
 
 #ifndef LIB_MYSQLUDF_CRYPT_PROVIDER_ENV
 #define LIB_MYSQLUDF_CRYPT_PROVIDER_ENV "LIB_MYSQLUDF_CRYPT_PROVIDER"

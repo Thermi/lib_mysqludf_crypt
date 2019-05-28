@@ -1,7 +1,7 @@
 # lib_LTLIBRARIES = lib_mysqludf_crypt.la
 lib_mysqludf_cryptdir = src
 
-AM_CFLAGS = -g3 -Wall -Werr -DSTANDARD -DMYSQL_SERVER @MYSQL_CFLAGS@ 
+AM_CFLAGS = -g3 -Wall -Werror -DSTANDARD -DMYSQL_SERVER @MYSQL_CFLAGS@ 
 AM_CXXFLAGS = -DSTANDARD -DMYSQL_SERVER @MYSQL_CFLAGS@
 AM_LDFLAGS = -module -avoid-version -no-undefined -rpath @MYSQL_PLUGINDIR@
 
