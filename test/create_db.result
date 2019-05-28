@@ -26,7 +26,7 @@ RETURN lib_mysqludf_crypt_argon2(CONCAT(salt, password));
 CREATE OR REPLACE FUNCTION UDF_SCRYPT (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_scrypt(CONCAT(salt, password));
 CREATE OR REPLACE FUNCTION UDF_RAND (random_bytes_number INT UNSIGNED) RETURNS VARCHAR(21844) NOT DETERMINISTIC READS SQL DATA
-RETURN lib_mysqludf_crypt_rand(random_bytes_number);
+RETURN lib_mysqludf_crypt_random(random_bytes_number);
 CREATE OR REPLACE FUNCTION UDF_BASE64_ENCODE (input VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_base64_encode(input);
 CREATE OR REPLACE FUNCTION UDF_BASE64_DECODE (input VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
@@ -164,6 +164,7 @@ GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_user TO 'admin_user'@'localhost'
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.change_password TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.check_user_exists TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.check_password TO 'admin_user'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.set_password TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_email TO 'admin_user'@'localhost';
 GRANT SELECT,DELETE,INSERT,UPDATE ON users TO 'admin_user'@'localhost';
 GRANT SELECT,DELETE,INSERT ON email_addresses TO 'admin_user'@'localhost';
