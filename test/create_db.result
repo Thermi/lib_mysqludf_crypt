@@ -10,36 +10,27 @@ CREATE TABLE secret_data (data_id BIGINT UNSIGNED AUTO_INCREMENT, user_id BIGINT
 CONSTRAINT fk_secret_data_user_id FOREIGN KEY (user_id) REFERENCES users (user_id));
 CREATE OR REPLACE USER 'application'@'localhost' IDENTIFIED BY 'abcde';
 CREATE OR REPLACE USER 'admin_user'@'localhost' IDENTIFIED BY PASSWORD '11111111111111111111111111111111111111111';
+GRANT USAGE ON mysqludf_crypt_db.* TO 'application'@'localhost';
 CREATE OR REPLACE FUNCTION UDF_SHA256 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_sha256(CONCAT(salt, password));
-//
 CREATE OR REPLACE FUNCTION UDF_SHA384 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_sha384(CONCAT(salt, password));
-//
 CREATE OR REPLACE FUNCTION UDF_SHA512 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_sha512(CONCAT(salt, password));
-//
 CREATE OR REPLACE FUNCTION UDF_SHA3 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_sha3(CONCAT(salt, password));
-//
 CREATE OR REPLACE FUNCTION UDF_BLAKE2B (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_blake2b(CONCAT(salt, password));
-//
 CREATE OR REPLACE FUNCTION UDF_ARGON2 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_argon2(CONCAT(salt, password));
-//
 CREATE OR REPLACE FUNCTION UDF_SCRYPT (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_scrypt(CONCAT(salt, password));
-//
 CREATE OR REPLACE FUNCTION UDF_RAND (random_bytes_number INT UNSIGNED) RETURNS VARCHAR(21844) NOT DETERMINISTIC READS SQL DATA
 RETURN lib_mysqludf_crypt_rand(random_bytes_number);
-//
 CREATE OR REPLACE FUNCTION UDF_BASE64_ENCODE (input VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_base64_encode(input);
-//
 CREATE OR REPLACE FUNCTION UDF_BASE64_DECODE (input VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_base64_decode(input);
-//
 CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION change_password (user_name VARCHAR(21844), old_password VARCHAR(21844), new_password VARCHAR(21844)) RETURNS BOOLEAN DETERMINISTIC MODIFIES SQL DATA SQL SECURITY DEFINER
 BEGIN
 DECLARE old_hash TYPE OF passwords.password_hash;
@@ -93,10 +84,10 @@ END;
 RETURN NULL;
 END CASE;
 END //
-CREATE DEFINER='admin_user'@'localhost' FUNCTION check_user_exists(user_name VARCHAR(21844)) RETURNS BOOLEAN SQL SECURITY DEFINER DETERMINISTIC
+CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION check_user_exists(user_name VARCHAR(21844)) RETURNS BOOLEAN SQL SECURITY DEFINER DETERMINISTIC
 BEGIN
-DECLARE count_matching_users TYPE OF users.username;
-SELECT COUNT(*) INTO count_matching_users FROM users WHERE username = user_name;
+DECLARE count_matching_users BIGINT;
+SELECT COUNT(*) INTO count_matching_users FROM users WHERE user_name = user_name;
 IF count_matching_users = 1
 THEN
 RETURN TRUE;
@@ -165,13 +156,20 @@ CALL set_password("BLAKE2b", user_id, password);
 CALL add_email(user_name, email_address);
 RETURN TRUE;
 END; //
-GRANT EXECUTE ON FUNCTION add_user TO 'application'@'localhost';
-GRANT EXECUTE ON FUNCTION change_password TO 'application'@'localhost';
-GRANT EXECUTE ON FUNCTION check_password TO 'application'@'localhost';
-GRANT EXECUTE ON FUNCTION add_email TO 'application'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_user TO 'application'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.change_password TO 'application'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.check_password TO 'application'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_email TO 'application'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_user TO 'admin_user'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.change_password TO 'admin_user'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.check_user_exists TO 'admin_user'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.check_password TO 'admin_user'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_email TO 'admin_user'@'localhost';
 GRANT SELECT,DELETE,INSERT,UPDATE ON users TO 'admin_user'@'localhost';
 GRANT SELECT,DELETE,INSERT ON email_addresses TO 'admin_user'@'localhost';
 GRANT SELECT,INSERT,UPDATE ON passwords TO 'admin_user'@'localhost';
+GRANT SELECT (algorithm, password_hash, salt) ON passwords TO 'admin_user'@'localhost';
+GRANT SELECT (user_name, user_id) ON users TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_SHA256 TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_SHA384 TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_SHA512 TO 'admin_user'@'localhost';
