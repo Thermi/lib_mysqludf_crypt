@@ -275,7 +275,7 @@ extern "C" {
 
         if(args->arg_count == 1) {
             if (args->arg_type[0] == INT_RESULT) {
-                if (!scanf("%ld", &bytes_to_request)) {
+                if (!sscanf(args->args[0], "%ld", &bytes_to_request)) {
                     snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random_init failed to parse the first argument as 64 bit integer.\n");
                     return 1;
                 }
