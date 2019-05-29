@@ -8,7 +8,7 @@ AM_LDFLAGS = -module -avoid-version -no-undefined -rpath @MYSQL_PLUGINDIR@
 
 
 lib_mysqludf_crypt_la_SOURCES = \
-	lib_mysqludf_crypt.c lib_mysqludf_crypt.h mysqludf.c mysqludf.h
+	lib_mysqludf_crypt.c lib_mysqludf_crypt.h
 
 lib_mysqludf_crypt_la_LDFLAGS = -version-info 0:0:0
 
