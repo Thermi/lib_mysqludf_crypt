@@ -322,7 +322,7 @@ extern "C" {
     DLLEXP my_bool lib_mysqludf_crypt_random_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
         uint64_t bytes_to_request = 8;
         int ret;
-        char *selected_rng_type = "user";
+        char *selected_rng_type = "system";
 
         struct rng_data_storage *rng_data_storage;
 
@@ -364,7 +364,7 @@ extern "C" {
         }
         /* Allocate memory for structures */
 
-        rng_data_storage = malloc(sizeof(rng_data_storage));
+        rng_data_storage = malloc(sizeof(struct rng_data_storage));
 
         if (!rng_data_storage) {
             snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not allocate enough memory for the data storage structure.\n");
