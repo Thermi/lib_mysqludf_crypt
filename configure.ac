@@ -2,7 +2,7 @@ AC_PREREQ(2.59)
 
 AC_INIT([lib_mysqludf_crypt],[0.0.1],[you@example.com])
 
-AC_CONFIG_SRCDIR(src/lib_mysqludf_crypt.c)
+AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_AUX_DIR(config)
 AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADER(config.h)
@@ -12,6 +12,10 @@ AC_DEFINE([CONFIG_H_INCLUDED], [], [defined if config.h included])
 # AM_INIT_AUTOMAKE(m4_esyscmd())
 AM_INIT_AUTOMAKE([-Wall -Werror foreign])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
+AC_USE_SYSTEM_EXTENSIONS
+
+m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES([yes])],
+    [AC_SUBST([AM_DEFAULT_VERBOSITY], [1])])
 
 
 AC_ENABLE_SHARED
