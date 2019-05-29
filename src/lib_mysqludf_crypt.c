@@ -279,24 +279,83 @@ extern "C" {
         return 0;
     }
 
+    static my_bool switch_case_arg_type(UDF_ARGS *args, char **selected_rng_type, uint64_t *bytes_to_request, char *message) {
+        /* exactly two args */
+        bool got_rng_type = false;
+        bool got_bytes_to_request = false;
+
+        for (int i=0; i<2;i++) {
+            switch(args->arg_type[i]) {
+                case INT_RESULT:
+                    if (!got_bytes_to_request) {
+                        *bytes_to_request = *(uint *) (args->args[i]);
+                        got_bytes_to_request = true;
+                    } else {
+                        snprintf(message, MYSQL_ERRMSG_SIZE, "Invalid argument: Reject specification of amount of randomness twice.\n");
+                        return 1;
+                    }
+                break;
+                case STRING_RESULT:
+                    if (!got_rng_type) {
+                        *selected_rng_type = calloc(sizeof(char), args->lengths[i]+1);
+                        if (!*selected_rng_type) {
+                            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random_init could not allocate enough memory for the RNG type name.\n");
+                            return 1;
+                        }
+
+                        snprintf(*selected_rng_type, args->lengths[i]+1, "%s", args->args[i]);
+                        got_rng_type = true;
+                    } else {
+                        snprintf(message, MYSQL_ERRMSG_SIZE, "Invalid argument: Rejected specification of RNG type twice.\n");
+                        return 1;
+                    }
+                break;
+                default:
+                    snprintf(message, MYSQL_ERRMSG_SIZE, "Invalid argument: Wrong argument type.\n");
+                    return 1;
+                break;
+            }
+        }
+        return 0;
+    }
+
     DLLEXP my_bool lib_mysqludf_crypt_random_init(UDF_INIT *initid, UDF_ARGS *args, char *message) {
         uint64_t bytes_to_request = 8;
         int ret;
+        char *selected_rng_type = "user";
 
         struct rng_data_storage *rng_data_storage;
 
-        if (args->arg_count > 1) {
-            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random_init takes at most one argument.\n");
-            return 1;
-        }
-
-        if(args->arg_count == 1) {
-            if (args->arg_type[0] == INT_RESULT) {
-                bytes_to_request = *(int *) (args->args[0]);
-            } else {
-                snprintf(message, MYSQL_ERRMSG_SIZE, "The first argument to lib_mysqludf_crypt_random has to be of type INT.\n");
+        switch(args->arg_count) {
+            case 0:
+            /* no args, this is fine. */
+            break;
+            case 1:
+                switch(args->arg_type[0]) {
+                    case INT_RESULT:
+                        bytes_to_request = *(int *) (args->args[0]);
+                    break;
+                    case STRING_RESULT:
+                        selected_rng_type = calloc(sizeof(char), args->lengths[0]+1);
+                        snprintf(selected_rng_type, args->lengths[0], "%s", args->args[0]);
+                    break;
+                    default:
+                        snprintf(message, MYSQL_ERRMSG_SIZE, "Invalid argument: Wrong argument type.\n");
+                        return 1;
+                    break;
+                }
+            break;
+            case 2:
+                ret = switch_case_arg_type(args, &selected_rng_type, &bytes_to_request, message);
+                if (ret) {
+                    return ret;
+                }
+                break;
+            default:
+                /* Too many args */
+                snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random_init takes at most two arguments.\n");
                 return 1;
-            }
+            break;
         }
 
         if (!bytes_to_request) {
@@ -312,7 +371,7 @@ extern "C" {
             return 1;
         }
 
-        ret = botan_rng_init(&rng_data_storage->rng_structure, "user");
+        ret = botan_rng_init(&rng_data_storage->rng_structure, selected_rng_type);
 
         if(ret) {
             snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not initialize the rng structure: "
