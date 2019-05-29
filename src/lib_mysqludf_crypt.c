@@ -161,7 +161,7 @@ extern "C" {
         /* put data into hash */
 
         /* Output aggregate result */
-        botan_hash_update(*botan_hash_structure, args->args[0], args->lengths[0]);
+        botan_hash_update(*botan_hash_structure, (const unsigned char *) args->args[0], args->lengths[0]);
         botan_hash_final(*botan_hash_structure, output_buffer);
 
         botan_hex_encode(output_buffer, *length, pointers->hex_data, 0);
@@ -561,7 +561,7 @@ extern "C" {
     DLLEXP char*lib_mysqludf_crypt_base64_encode(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
         char *is_null, char *error) {
         size_t out_length = (args->lengths[0]*4)/3;
-        int ret = botan_base64_encode(args->args[0], args->lengths[0], initid->ptr, &out_length);
+        int ret = botan_base64_encode((const uint8_t *) args->args[0], args->lengths[0], initid->ptr, &out_length);
 
         if(ret) {
             snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_encode could not encode the data. "
@@ -579,7 +579,7 @@ extern "C" {
     DLLEXP char*lib_mysqludf_crypt_base64_decode(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
         char *is_null, char *error) {
         size_t out_length = (args->lengths[0]*3)/4;
-        int ret = botan_base64_decode(args->args[0], args->lengths[0], initid->ptr, &out_length);
+        int ret = botan_base64_decode(args->args[0], args->lengths[0], (uint8_t *) initid->ptr, &out_length);
 
         if(ret) {
             snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_decode could not decode the data. "
@@ -664,8 +664,8 @@ extern "C" {
         struct storage_object storage;
         enum lib_mysqludf_crypt_crypto_provider provider;
         dl_iterate_phdr(lib_mysqludf_crypt_dl_iterate_phdr_callback, storage_object);
-        /* Order providers by priority */
-    /*
+        Order providers by priority
+    
         order_providers(storage);
         if (storage_object_length(storage) > 0) {
             provider = storage_object_get(storage, 0);
