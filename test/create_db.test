@@ -44,7 +44,7 @@ RETURN lib_mysqludf_crypt_argon2(CONCAT(salt, password));
 CREATE OR REPLACE FUNCTION UDF_SCRYPT (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_scrypt(CONCAT(salt, password));
 
-CREATE OR REPLACE FUNCTION UDF_RAND (random_bytes_number INT UNSIGNED) RETURNS VARCHAR(21844) NOT DETERMINISTIC READS SQL DATA
+CREATE OR REPLACE FUNCTION UDF_RANDOM (random_bytes_number INT UNSIGNED) RETURNS VARCHAR(21844) NOT DETERMINISTIC READS SQL DATA
 RETURN lib_mysqludf_crypt_random(random_bytes_number);
 
 
@@ -91,7 +91,7 @@ DECLARE salt TYPE OF passwords.salt;
 DECLARE hash TYPE OF passwords.password_hash; 
 DECLARE existing_user BIGINT UNSIGNED;
 
-SELECT UDF_RAND(128) INTO salt;
+SELECT UDF_RANDOM(128) INTO salt;
 SELECT MYSQLUDF_CRYPT_MULTIHASH(algo, salt, password) INTO hash;
 SELECT COUNT(*) INTO existing_user FROM users WHERE user_id = user_id LIMIT 1;
 IF existing_user = 1
@@ -116,8 +116,8 @@ CASE algo
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Given hash method is not supported';
             RETURN NULL;
         END;
-RETURN NULL;
 END CASE;
+RETURN NULL;
 END //
 
 CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION check_user_exists(user_name VARCHAR(21844)) RETURNS BOOLEAN SQL SECURITY DEFINER DETERMINISTIC
@@ -234,6 +234,6 @@ GRANT EXECUTE ON FUNCTION UDF_SHA3 TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_BLAKE2b TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_ARGON2 TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_SCRYPT TO 'admin_user'@'localhost';
-GRANT EXECUTE ON FUNCTION UDF_RAND TO 'admin_user'@'localhost';
+GRANT EXECUTE ON FUNCTION UDF_RANDOM TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_BASE64_ENCODE TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_BASE64_DECODE TO 'admin_user'@'localhost';
