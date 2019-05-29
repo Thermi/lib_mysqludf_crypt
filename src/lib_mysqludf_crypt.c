@@ -463,12 +463,23 @@ extern "C" {
             snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_random could not get random data from the rng. "
                 "Reported failure: %s\n", botan_error_description(ret));
             botan_rng_destroy(data_storage->rng_structure);
+            free(data_storage->hex_buffer);
             free(data_storage->output_data);
             free(data_storage);
             *is_null = true;
             return NULL;
         }
-        botan_rng_destroy(data_storage->rng_structure);
+
+        ret = botan_rng_destroy(data_storage->rng_structure);
+
+        if (ret) {
+            snprintf(error, MYSQL_ERRMSG_SIZE, "Failed to destroy RNG: %s", botan_error_description(ret));
+            free(data_storage->hex_buffer);
+            free(data_storage->output_data);
+            free(data_storage);
+            *is_null = true;
+            return NULL;
+        }
         /* probably should hex encode the output, so it's always a valid string */
         ret = botan_hex_encode(data_storage->output_data, data_storage->output_data_length, data_storage->hex_buffer, 0);
 
