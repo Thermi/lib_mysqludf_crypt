@@ -9,7 +9,7 @@ CONSTRAINT fk_passwords_user_id FOREIGN KEY (user_id) REFERENCES users (user_id)
 CREATE TABLE secret_data (data_id BIGINT UNSIGNED AUTO_INCREMENT, user_id BIGINT UNSIGNED, secret_data VARCHAR(1024) NOT NULL, PRIMARY KEY (data_id),
 CONSTRAINT fk_secret_data_user_id FOREIGN KEY (user_id) REFERENCES users (user_id));
 CREATE OR REPLACE USER 'application'@'localhost' IDENTIFIED BY 'abcde';
-CREATE OR REPLACE USER 'admin_user'@'localhost' IDENTIFIED BY PASSWORD '11111111111111111111111111111111111111111';
+CREATE OR REPLACE USER 'admin_user'@'localhost' IDENTIFIED BY 'abcde';
 GRANT USAGE ON mysqludf_crypt_db.* TO 'application'@'localhost';
 CREATE OR REPLACE FUNCTION UDF_SHA256 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
 RETURN lib_mysqludf_crypt_sha256(CONCAT(salt, password));
@@ -37,6 +37,7 @@ DECLARE old_hash TYPE OF passwords.password_hash;
 DECLARE new_hash TYPE OF passwords.password_hash;
 DECLARE salt TYPE OF passwords.salt;
 DECLARE algo TYPE OF passwords.algorithm;
+DECLARE user_id TYPE OF users.user_id;
 SELECT passwords.password_hash, passwords.salt, passwords.algorithm
 INTO old_hash, salt, algo
 FROM passwords LEFT JOIN users ON users.user_id = passwords.user_id
@@ -44,6 +45,7 @@ WHERE users.user_name = user_name LIMIT 1;
 SELECT MYSQLUDF_CRYPT_MULTIHASH(algo, salt, old_password) INTO new_hash;
 IF MYSQLUDF_CRYPT_CONSTANT_TIME_COMPARE(old_hash, new_hash)
 THEN
+SELECT user_id INTO user_id FROM users WHERE user_name = user_name LIMIT 1;
 # set new password, return true
 CALL SET_PASSWORD (algo, user_id, new_password);
 RETURN TRUE;
@@ -119,17 +121,17 @@ END //
 CREATE OR REPLACE  DEFINER='admin_user'@'localhost' FUNCTION add_email(user_name VARCHAR(21844), email_address VARCHAR(21844)) RETURNS BOOLEAN DETERMINISTIC SQL SECURITY DEFINER
 BEGIN
 DECLARE user_id TYPE OF users.user_id;
-DECLARE email_addresses TYPE OF users.user_id;
+DECLARE email_addresses BIGINT UNSIGNED;
 # join users and email_addresses
-SELECT user_id INTO user_id
+SELECT COUNT(users.user_id) INTO user_id
 FROM users
 WHERE user_name = user_name LIMIT 1;
-IF COUNT(user_id) < 0
+IF user_id != 0
 THEN
 RETURN FALSE;
 END IF;
 # Check if email address already exists
-SELECT COUNT(email_address) INTO email_addresses
+SELECT COUNT(*) INTO email_addresses
 FROM email_addresses
 WHERE user_id = user_id AND email_address = email_address;
 IF email_addresses > 0

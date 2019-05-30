@@ -63,6 +63,7 @@ DECLARE old_hash TYPE OF passwords.password_hash;
 DECLARE new_hash TYPE OF passwords.password_hash;
 DECLARE salt TYPE OF passwords.salt;
 DECLARE algo TYPE OF passwords.algorithm;
+DECLARE user_id TYPE OF users.user_id;
 
 SELECT passwords.password_hash, passwords.salt, passwords.algorithm
     INTO old_hash, salt, algo
@@ -73,6 +74,7 @@ SELECT MYSQLUDF_CRYPT_MULTIHASH(algo, salt, old_password) INTO new_hash;
 
 IF MYSQLUDF_CRYPT_CONSTANT_TIME_COMPARE(old_hash, new_hash)
 THEN
+    SELECT user_id INTO user_id FROM users WHERE user_name = user_name LIMIT 1;
     # set new password, return true
     CALL SET_PASSWORD (algo, user_id, new_password);
     RETURN TRUE;
@@ -161,22 +163,23 @@ END //
 CREATE OR REPLACE  DEFINER='admin_user'@'localhost' FUNCTION add_email(user_name VARCHAR(21844), email_address VARCHAR(21844)) RETURNS BOOLEAN DETERMINISTIC SQL SECURITY DEFINER
 BEGIN
 DECLARE user_id TYPE OF users.user_id;
-DECLARE email_addresses TYPE OF users.user_id;
+DECLARE email_addresses BIGINT UNSIGNED;
 
 # join users and email_addresses
-SELECT user_id INTO user_id
+SELECT COUNT(users.user_id) INTO user_id
     FROM users
     WHERE user_name = user_name LIMIT 1;
 
-IF COUNT(user_id) < 0
+IF user_id != 0
 THEN
     RETURN FALSE;
 END IF;
 
 # Check if email address already exists
-SELECT COUNT(email_address) INTO email_addresses
+SELECT COUNT(*) INTO email_addresses
     FROM email_addresses
     WHERE user_id = user_id AND email_address = email_address;
+
 IF email_addresses > 0
 THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='You can not add an existing email.';
