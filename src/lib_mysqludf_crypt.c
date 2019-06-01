@@ -229,7 +229,14 @@ extern "C" {
             return 1;
         }
 
-        struct hash_data_storage *hash_data_storage = malloc(sizeof(void *)*2);
+        struct hash_data_storage *hash_data_storage = malloc(sizeof(struct hash_data_storage));
+        if (!hash_data_storage) {
+            snprintf(message, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_%s could not allocate the buffer for the hash data storage.\n",
+                hash_udf_name);
+            free(hash_udf_name);
+            free(hex_data);
+            return 1;
+        }
         hash_data_storage->hash_structure = hash_structure;
         hash_data_storage->output_data = output_data;
         hash_data_storage->hex_data = hex_data;
