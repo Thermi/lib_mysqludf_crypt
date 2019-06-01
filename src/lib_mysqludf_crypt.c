@@ -515,7 +515,7 @@ extern "C" {
         return (long long) constant_time_compare(args->args[0], args->args[1], args->lengths[0], args->lengths[1]);
     }
 
-    DLLEXP char* lib_mysqludf_crypt_info(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
+    DLLEXP char *lib_mysqludf_crypt_info(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
         char *return_message = malloc(strlen(LIBMYSQLUDF_CRYPT_VERSION)+1);
         strncpy(return_message, LIBMYSQLUDF_CRYPT_VERSION, strlen(LIBMYSQLUDF_CRYPT_VERSION)+1);
         return return_message;
@@ -565,13 +565,14 @@ extern "C" {
         return result;
     }
 
-    DLLEXP char*lib_mysqludf_crypt_base64_encode(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
+    DLLEXP char *lib_mysqludf_crypt_base64_encode(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
         char *is_null, char *error) {
         size_t out_length = (args->lengths[0]*4)/3;
         int ret = botan_base64_encode((const uint8_t *) args->args[0], args->lengths[0], initid->ptr, &out_length);
 
         if(ret) {
-            snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_encode could not encode the data. "
+            *error = true;
+            snprintf(result, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_encode could not encode the data. "
                 "Reported failure: %s\n", botan_error_description(ret));
             free(initid->ptr);
             return NULL;
@@ -583,13 +584,14 @@ extern "C" {
     }
 
 
-    DLLEXP char*lib_mysqludf_crypt_base64_decode(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
+    DLLEXP char *lib_mysqludf_crypt_base64_decode(UDF_INIT *initid, UDF_ARGS *args, char *result, unsigned long *length,
         char *is_null, char *error) {
         size_t out_length = (args->lengths[0]*3)/4;
         int ret = botan_base64_decode(args->args[0], args->lengths[0], (uint8_t *) initid->ptr, &out_length);
 
         if(ret) {
-            snprintf(error, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_decode could not decode the data. "
+            *error = true;
+            snprintf(result, MYSQL_ERRMSG_SIZE, "lib_mysqludf_crypt_base64_decode could not decode the data. "
                 "Reported failure: %s\n", botan_error_description(ret));
             free(initid->ptr);
             return NULL;
