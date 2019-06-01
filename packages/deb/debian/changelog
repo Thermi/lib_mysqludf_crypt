@@ -1,0 +1,5 @@
+libmysqludfcrypt (0.0.0) unstable; urgency=low
+
+  * Package for libmysqludfcrypt
+
+ -- Noel Kuntze <noel.kuntze@thermi.consulting>  Fri, 31 May 2019 23:19:00 +0200

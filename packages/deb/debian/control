@@ -1,0 +1,15 @@
+Source: libmysqludfcrypt
+Section: net
+Priority: extra
+Maintainer: Noel Kuntze <noel.kuntze@thermi.consultingorg>
+Standards-Version: 3.9.2
+Build-Depends: debhelper (>= 7.0.0), botan
+
+Package: libmysqludfcrypt
+Architecture: any
+Depends: ${shlibs:Depends}, ${misc:Depends}
+Description: Crypto UDF library for mariadb.
+ libmysqludfcrypt is a UDF library for mariadb that implements cryptographic functions.
+ To do that, it links against botan. It supports modern hashing functions, a cryptographic
+ generator and a constant time compare function.
+ .
