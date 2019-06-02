@@ -56,8 +56,8 @@ m4_include(config/ax_mysql_bin.m4)
 AX_MYSQL_BIN
 
 AC_ARG_WITH([botan],
-  AC_HELP_STRING([--with-botan=@<:@ARG|:>@],
-    [user botan client library @>:@default=yes@:>@]
+  AC_HELP_STRING([--with-botan=@<:@ARG@:>@],
+    [user botan client library @<:@default=yes@:>@]
     ),
     [
       if test "$withval" = "no"; then
