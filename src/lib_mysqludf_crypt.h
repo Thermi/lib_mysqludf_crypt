@@ -86,5 +86,10 @@ struct rng_data_storage {
     void *hex_buffer;
 };
 
+struct base64_data_storage {
+    void *storage;
+    size_t length;
+};
+
 #endif /* MYSQLUDF_CRYPT_H_ */
 
