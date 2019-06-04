@@ -1,6 +1,6 @@
 SET @@SQL_MODE = CONCAT(@@SQL_MODE, ',STRICT_ALL_TABLES');
 
-CREATE OR REPLACE DATABASE mysqludf_crypt_db DEFAULT CHARACTER SET = 'utf8' DEFAULT COLLATE = 'utf8_general_ci';
+CREATE OR REPLACE DATABASE mysqludf_crypt_db;
 
 USE mysqludf_crypt_db;
 
@@ -20,50 +20,48 @@ CREATE OR REPLACE USER 'admin_user'@'localhost' IDENTIFIED BY PASSWORD '11111111
 
 GRANT USAGE ON mysqludf_crypt_db.* TO 'application'@'localhost';
 
-CREATE OR REPLACE FUNCTION UDF_SHA256 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
+CREATE OR REPLACE FUNCTION MYSQLUDF_CRYPT_CONSTANT_TIME_COMPARE (string_1 VARCHAR(16383), string_2 VARCHAR(16383)) RETURNS BOOLEAN DETERMINISTIC READS SQL DATA
+RETURN lib_mysqludf_crypt_constant_time_compare(string_1, string_2);
+
+CREATE OR REPLACE FUNCTION UDF_SHA256 (salt VARCHAR(16383), password VARCHAR(16383)) RETURNS VARCHAR(16383) DETERMINISTIC
 RETURN lib_mysqludf_crypt_sha256(CONCAT(salt, password));
 
-
-CREATE OR REPLACE FUNCTION UDF_SHA384 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
+CREATE OR REPLACE FUNCTION UDF_SHA384 (salt VARCHAR(16383), password VARCHAR(16383)) RETURNS VARCHAR(16383) DETERMINISTIC
 RETURN lib_mysqludf_crypt_sha384(CONCAT(salt, password));
 
-CREATE OR REPLACE FUNCTION UDF_SHA512 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
+CREATE OR REPLACE FUNCTION UDF_SHA512 (salt VARCHAR(16383), password VARCHAR(16383)) RETURNS VARCHAR(16383) DETERMINISTIC
 RETURN lib_mysqludf_crypt_sha512(CONCAT(salt, password));
 
-CREATE OR REPLACE FUNCTION UDF_SHA3 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
+CREATE OR REPLACE FUNCTION UDF_SHA3 (salt VARCHAR(16383), password VARCHAR(16383)) RETURNS VARCHAR(16383) DETERMINISTIC
 RETURN lib_mysqludf_crypt_sha3(CONCAT(salt, password));
 
-CREATE OR REPLACE FUNCTION UDF_BLAKE2B (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
+CREATE OR REPLACE FUNCTION UDF_BLAKE2B (salt VARCHAR(16383), password VARCHAR(16383)) RETURNS VARCHAR(16383) DETERMINISTIC
 RETURN lib_mysqludf_crypt_blake2b(CONCAT(salt, password));
 
-
-CREATE OR REPLACE FUNCTION UDF_ARGON2 (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
+CREATE OR REPLACE FUNCTION UDF_ARGON2 (salt VARCHAR(16383), password VARCHAR(16383)) RETURNS VARCHAR(16383) DETERMINISTIC
 RETURN lib_mysqludf_crypt_argon2(CONCAT(salt, password));
 
-
-CREATE OR REPLACE FUNCTION UDF_SCRYPT (salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
+CREATE OR REPLACE FUNCTION UDF_SCRYPT (salt VARCHAR(16383), password VARCHAR(16383)) RETURNS VARCHAR(16383) DETERMINISTIC
 RETURN lib_mysqludf_crypt_scrypt(CONCAT(salt, password));
 
-CREATE OR REPLACE FUNCTION UDF_RANDOM (random_bytes_number INT UNSIGNED) RETURNS VARCHAR(21844) NOT DETERMINISTIC READS SQL DATA
+CREATE OR REPLACE FUNCTION UDF_RANDOM (random_bytes_number INT UNSIGNED) RETURNS VARCHAR(16383) NOT DETERMINISTIC READS SQL DATA
 RETURN lib_mysqludf_crypt_random(random_bytes_number);
 
-
-CREATE OR REPLACE FUNCTION UDF_BASE64_ENCODE (input VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
+CREATE OR REPLACE FUNCTION UDF_BASE64_ENCODE (input VARCHAR(16383)) RETURNS VARCHAR(16383) DETERMINISTIC
 RETURN lib_mysqludf_crypt_base64_encode(input);
 
-
-CREATE OR REPLACE FUNCTION UDF_BASE64_DECODE (input VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC
+CREATE OR REPLACE FUNCTION UDF_BASE64_DECODE (input VARCHAR(16383)) RETURNS VARCHAR(16383) DETERMINISTIC
 RETURN lib_mysqludf_crypt_base64_decode(input);
 
 DELIMITER //;
 
-CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION change_password (user_name VARCHAR(21844), old_password VARCHAR(21844), new_password VARCHAR(21844)) RETURNS BOOLEAN DETERMINISTIC MODIFIES SQL DATA SQL SECURITY DEFINER
+CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION change_password (user_name VARCHAR(16383), old_password VARCHAR(16383), new_password VARCHAR(16383)) RETURNS BOOLEAN DETERMINISTIC MODIFIES SQL DATA SQL SECURITY DEFINER
 BEGIN
 DECLARE old_hash TYPE OF passwords.password_hash;
 DECLARE new_hash TYPE OF passwords.password_hash;
 DECLARE salt TYPE OF passwords.salt;
 DECLARE algo TYPE OF passwords.algorithm;
-DECLARE user_id TYPE OF users.user_id;
+DECLARE user_id_var TYPE OF users.user_id;
 
 SELECT passwords.password_hash, passwords.salt, passwords.algorithm
     INTO old_hash, salt, algo
@@ -74,9 +72,9 @@ SELECT MYSQLUDF_CRYPT_MULTIHASH(algo, salt, old_password) INTO new_hash;
 
 IF MYSQLUDF_CRYPT_CONSTANT_TIME_COMPARE(old_hash, new_hash)
 THEN
-    SELECT user_id INTO user_id FROM users WHERE user_name = user_name LIMIT 1;
+    SELECT user_id INTO user_id_var FROM users WHERE user_name = user_name LIMIT 1;
     # set new password, return true
-    CALL SET_PASSWORD (algo, user_id, new_password);
+    CALL SET_PASSWORD (algo, user_id_var, new_password);
     RETURN TRUE;
 END IF;
 SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Given password does not match.';
@@ -87,7 +85,7 @@ END //
 
 # it makes no sense that even with binlog_format=mixed, such functions couldn't be safely binlogged. With a simple row based
 # logging in this case, this should work just fine?
-CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION set_password (algo VARCHAR(21844), user_id BIGINT UNSIGNED, password VARCHAR(21844)) RETURNS BOOLEAN DETERMINISTIC MODIFIES SQL DATA SQL SECURITY DEFINER
+CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION set_password (algo VARCHAR(16383), user_id_arg BIGINT UNSIGNED, password VARCHAR(16383)) RETURNS BOOLEAN DETERMINISTIC MODIFIES SQL DATA SQL SECURITY DEFINER
 BEGIN
 DECLARE salt TYPE OF passwords.salt;
 DECLARE hash TYPE OF passwords.password_hash; 
@@ -95,25 +93,31 @@ DECLARE existing_user BIGINT UNSIGNED;
 
 SELECT UDF_RANDOM(128) INTO salt;
 SELECT MYSQLUDF_CRYPT_MULTIHASH(algo, salt, password) INTO hash;
-SELECT COUNT(*) INTO existing_user FROM users WHERE user_id = user_id LIMIT 1;
-IF existing_user = 1
+SELECT COUNT(*) INTO existing_user FROM passwords WHERE user_id = user_id_arg LIMIT 1;
+IF existing_user = 0
 THEN
-    INSERT INTO passwords (salt, password_hash, algo, user_id) VALUES (salt, hash, algo, user_id);
+    INSERT INTO passwords (salt, password_hash, algorithm, user_id) VALUES (salt, hash, algo, user_id_arg);
 ELSE
-    UPDATE passwords SET salt = salt, password_hash = hash, algo = algo WHERE user_id = user_id;
+    UPDATE passwords SET salt = salt, password_hash = hash, algorithm = algo WHERE user_id = user_id_arg;
 END IF;
 RETURN TRUE;
 END //
 
-CREATE OR REPLACE FUNCTION MYSQLUDF_CRYPT_MULTIHASH(algo VARCHAR(21844), salt VARCHAR(21844), password VARCHAR(21844)) RETURNS VARCHAR(21844) DETERMINISTIC 
+CREATE OR REPLACE FUNCTION MYSQLUDF_CRYPT_MULTIHASH(algo VARCHAR(16383), salt VARCHAR(16383), password VARCHAR(16383)) RETURNS VARCHAR(16383) DETERMINISTIC
 BEGIN
+#DECLARE txt VARCHAR(16383);
+#SET @txt=CONCAT('Hash algo value: ', algo);
+#SELECT INTO txt CONCAT('Hash algo value: ', algo, '');
+
+#RETURN UDF_BLAKE2B(salt, password);
+#SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='foo';
 CASE algo
-    WHEN "SHA-256" THEN RETURN UDF_SHA256(salt, password);
-    WHEN "SHA-384" THEN RETURN UDF_SHA384(salt, password);
-    WHEN "SHA-512" THEN RETURN UDF_SHA512(salt, password);
-    WHEN "BLAKE2b" THEN RETURN UDF_BLAKE2B(salt, password);
-    WHEN "ARGON2"  THEN RETURN UDF_ARGON2(salt, password);
-    WHEN "SCRYTP" THEN RETURN UDF_SCRYPT(salt, password);
+    WHEN 'SHA-256' THEN RETURN UDF_SHA256(salt, password);
+    WHEN 'SHA-384' THEN RETURN UDF_SHA384(salt, password);
+    WHEN 'SHA-512' THEN RETURN UDF_SHA512(salt, password);
+    WHEN 'BLAKE2B' THEN RETURN UDF_BLAKE2B(salt, password);
+    WHEN 'ARGON2'  THEN RETURN UDF_ARGON2(salt, password);
+    WHEN 'SCRYTP' THEN RETURN UDF_SCRYPT(salt, password);
     ELSE BEGIN
             SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='Given hash method is not supported';
             RETURN NULL;
@@ -122,27 +126,22 @@ END CASE;
 RETURN NULL;
 END //
 
-CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION check_user_exists(user_name VARCHAR(21844)) RETURNS BOOLEAN SQL SECURITY DEFINER DETERMINISTIC
+CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION check_user_exists(user_name_arg VARCHAR(16383)) RETURNS BOOLEAN SQL SECURITY DEFINER READS SQL DATA
 BEGIN
-DECLARE count_matching_users BIGINT;
-SELECT COUNT(*) INTO count_matching_users FROM users WHERE user_name = user_name;
+DECLARE count_matching_users BIGINT DEFAULT 0;
+SELECT SQL_NO_CACHE COUNT(user_id) INTO count_matching_users FROM users WHERE user_name = user_name_arg;
 
-IF count_matching_users = 1
-THEN
-    RETURN TRUE;
-ELSE
-    RETURN FALSE;
-END IF;
+RETURN count_matching_users != 0;
 END //
 
-CREATE OR REPLACE  DEFINER='admin_user'@'localhost' FUNCTION check_password(user_name VARCHAR(21844), password VARCHAR(21844)) RETURNS BOOLEAN DETERMINISTIC SQL SECURITY DEFINER
+CREATE OR REPLACE  DEFINER='admin_user'@'localhost' FUNCTION check_password(user_name_arg VARCHAR(16383), password VARCHAR(16383)) RETURNS BOOLEAN DETERMINISTIC SQL SECURITY DEFINER
 BEGIN
 DECLARE old_hash TYPE OF passwords.password_hash;
 DECLARE new_hash TYPE OF passwords.password_hash;
 DECLARE salt TYPE OF passwords.salt;
-DECLARE algo TYPE OF passwords.algorithm;
+DECLARE algo TYPE OF passwords.algorithm DEFAULT 'BLAKE2B';
 
-IF check_user_exists(user_name) = false
+IF check_user_exists(user_name_arg) = false
 THEN
     RETURN FALSE;
 END IF;
@@ -150,67 +149,113 @@ END IF;
 SELECT passwords.password_hash, passwords.salt, passwords.algorithm
     INTO old_hash, salt, algo
     FROM passwords LEFT JOIN users ON users.user_id = passwords.user_id
-    WHERE users.user_name = user_name LIMIT 1;
+    WHERE users.user_name = user_name_arg LIMIT 1;
 
-SELECT MYSQLUDF_CRYPT_MULTIHASH(algo, password, salt) INTO new_hash;
-IF MYSQLUDF_CRYPT_CONSTANT_TIME_COMPARE(old_hash, new_hash)
+IF algo = NULL
+THEN
+    SELECT 'BLAKE2B' INTO algo;
+END IF;
+
+SELECT MYSQLUDF_CRYPT_MULTIHASH(algo, salt, password) INTO new_hash;
+
+IF MYSQLUDF_CRYPT_CONSTANT_TIME_COMPARE(old_hash, new_hash) = true
 THEN
     RETURN TRUE;
+ELSE
+    RETURN FALSE;
 END IF;
-RETURN FALSE;
 END //
 
-CREATE OR REPLACE  DEFINER='admin_user'@'localhost' FUNCTION add_email(user_name VARCHAR(21844), email_address VARCHAR(21844)) RETURNS BOOLEAN DETERMINISTIC SQL SECURITY DEFINER
+CREATE OR REPLACE  DEFINER='admin_user'@'localhost' FUNCTION add_email(user_name_arg VARCHAR(16383), email_address_arg VARCHAR(16383)) RETURNS BOOLEAN DETERMINISTIC SQL SECURITY DEFINER
 BEGIN
-DECLARE user_id TYPE OF users.user_id;
-DECLARE email_addresses BIGINT UNSIGNED;
+DECLARE user_id_var TYPE OF users.user_id;
+DECLARE user_id_count BIGINT UNSIGNED;
+DECLARE email_addresses_count BIGINT UNSIGNED;
 
 # join users and email_addresses
-SELECT COUNT(users.user_id) INTO user_id
+SELECT users.user_id INTO user_id_var
     FROM users
-    WHERE user_name = user_name LIMIT 1;
+    WHERE user_name = user_name_arg LIMIT 1;
+SELECT COUNT(user_id_var) INTO user_id_count;
 
-IF user_id != 0
+IF user_id_count != 1
 THEN
     RETURN FALSE;
 END IF;
 
 # Check if email address already exists
-SELECT COUNT(*) INTO email_addresses
+SELECT COUNT(*) INTO email_addresses_count
     FROM email_addresses
-    WHERE user_id = user_id AND email_address = email_address;
+    WHERE email_addresses.email_address = email_address_arg;
 
-IF email_addresses > 0
+IF email_addresses_count > 0
 THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='You can not add an existing email.';
     RETURN FALSE;
 END IF;
 
-INSERT INTO email_addresses (user_id, email_address) VALUES (user_id, email_address);
+INSERT INTO email_addresses (user_id, email_address) VALUES (user_id_var, email_address_arg);
 # add email_address
 # COMMIT
-RETURN FALSE;
+RETURN TRUE;
 END //
 
-CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION add_user(user_name VARCHAR(21844), password VARCHAR(21844), email_address VARCHAR(21844)) RETURNS BOOLEAN DETERMINISTIC SQL SECURITY DEFINER
+CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION add_user(user_name_arg VARCHAR(16383), password VARCHAR(16383), email_address VARCHAR(16383)) RETURNS BOOLEAN DETERMINISTIC SQL SECURITY DEFINER
 BEGIN
-DECLARE user_id TYPE OF users.user_id;
-IF check_user_exists(user_name)
+DECLARE user_id_var TYPE OF users.user_id;
+DECLARE algo VARCHAR(16383) DEFAULT 'BLAKE2B';
+DECLARE error_message VARCHAR(16383);
+DECLARE ret BOOLEAN DEFAULT true;
+DECLARE user_exists BOOLEAN DEFAULT false;
+SELECT CONCAT('Failed to set the password for user', user_name_arg) INTO error_message;
+SELECT SQL_NO_CACHE check_user_exists(user_name_arg) INTO user_exists;
+IF user_exists
 THEN
     SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT='This user name is already used.';
     RETURN FALSE;
 END IF;
-INSERT INTO users (user_name) VALUES (user_name);
-SELECT user_id INTO user_id FROM users WHERE user_name = user_name LIMIT 1;
-CALL set_password("BLAKE2b", user_id, password);
-CALL add_email(user_name, email_address);
+
+INSERT INTO users (user_name) VALUES (user_name_arg);
+SELECT user_id INTO user_id_var FROM users WHERE user_name = user_name_arg LIMIT 1;
+
+IF set_password(algo, user_id_var, password) = false
+THEN
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT=error_message;
+    RETURN FALSE;
+END IF;
+
+IF add_email(user_name_arg, email_address) = false
+THEN
+    SELECT CONCAT('Failed to add email address for user ', user_name_arg) INTO error_message;
+    SIGNAL SQLSTATE '45000' SET MESSAGE_TEXT=error_message;
+    RETURN FALSE;
+END IF;
+
 RETURN TRUE;
 END; //
 
+CREATE OR REPLACE DEFINER='admin_user'@'localhost' FUNCTION delete_user(user_name VARCHAR(16383)) RETURNS BOOLEAN MODIFIES SQL DATA DETERMINISTIC SQL SECURITY DEFINER
+BEGIN
+# Check if user exists
+DECLARE v BOOLEAN DEFAULT FALSE;
+DECLARE user_id_var BIGINT UNSIGNED DEFAULT 0;
+SELECT SQL_NO_CACHE check_user_exists(user_name) INTO v;
+IF v = TRUE
+THEN
+    SELECT user_id INTO user_id_var FROM users WHERE user_name = user_name LIMIT 1;
+    DELETE FROM email_addresses WHERE user_id = user_id_var;
+    DELETE FROM passwords WHERE user_id = user_id_var;
+    DELETE FROM users WHERE user_id = user_id_var;
+    RETURN TRUE;
+ELSE
+RETURN FALSE;
+END IF;
+END; //
 DELIMITER ;//
 #'application'@'localhost' user can only use predefined functions to interact with sensitive data
 
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_user TO 'application'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.delete_user TO 'application'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.change_password TO 'application'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.check_password TO 'application'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_email TO 'application'@'localhost';
@@ -218,14 +263,19 @@ GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_email TO 'application'@'localhos
 
 #'admin_user'@'localhost' needs the privileges that the functions that are run as this user need
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_user TO 'admin_user'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.delete_user TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.change_password TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.check_user_exists TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.check_password TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.set_password TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.add_email TO 'admin_user'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.MYSQLUDF_CRYPT_MULTIHASH TO 'admin_user'@'localhost';
+GRANT EXECUTE ON FUNCTION mysqludf_crypt_db.MYSQLUDF_CRYPT_CONSTANT_TIME_COMPARE TO 'admin_user'@'localhost';
+
 GRANT SELECT,DELETE,INSERT,UPDATE ON users TO 'admin_user'@'localhost';
 GRANT SELECT,DELETE,INSERT ON email_addresses TO 'admin_user'@'localhost';
-GRANT SELECT,INSERT,UPDATE ON passwords TO 'admin_user'@'localhost';
+#GRANT DELETE (email_id, user_id, email_address) ON email_addresses TO 'admin_user'@'localhost';
+GRANT SELECT,INSERT,DELETE,UPDATE ON passwords TO 'admin_user'@'localhost';
 # Mariadb is bugged, needs SELECT on the columns, too.
 GRANT SELECT (algorithm, password_hash, salt) ON passwords TO 'admin_user'@'localhost';
 GRANT SELECT (user_name, user_id) ON users TO 'admin_user'@'localhost';
@@ -234,7 +284,7 @@ GRANT EXECUTE ON FUNCTION UDF_SHA256 TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_SHA384 TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_SHA512 TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_SHA3 TO 'admin_user'@'localhost';
-GRANT EXECUTE ON FUNCTION UDF_BLAKE2b TO 'admin_user'@'localhost';
+GRANT EXECUTE ON FUNCTION UDF_BLAKE2B TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_ARGON2 TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_SCRYPT TO 'admin_user'@'localhost';
 GRANT EXECUTE ON FUNCTION UDF_RANDOM TO 'admin_user'@'localhost';

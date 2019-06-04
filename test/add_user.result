@@ -1,0 +1,96 @@
+USE mysqludf_crypt_db;
+SELECT delete_user("test-user");
+delete_user("test-user")
+0
+SELECT add_user("test-user", "test-password", "test@example.com");
+add_user("test-user", "test-password", "test@example.com")
+1
+SELECT 1 = true;
+1 = true
+1
+SELECT user_name FROM users WHERE user_name = "test-user" LIMIT 1;
+user_name
+test-user
+SELECT * FROM passwords;
+user_id	salt	password_hash	algorithm
+1	0DBF112D0242598EB60C964B5D36F3FBF677FCE1DE4955F3E516E861EDF3037457F04B3149316023E5A8C768946D7B4CC5FCAF1A71E1BACE9EEBFF8CC77266D55339AB5EBBBFBB6ABB0EC8754F662F6AF67204650BF4F758FA7B7E4FACAA6019A174C582ED7A2997B57EF29B87DA72FC42C5AE7E869853321BF38B87F3753088	B7B551BA41FB4B8AD43432DEB6CB92757CFEEBB38BC83404BFE3E6D5307CAF32	BLAKE2B
+SELECT check_user_exists("test-user");
+check_user_exists("test-user")
+1
+SELECT check_password("test-user", "test-password");
+check_password("test-user", "test-password")
+0
+SELECT check_user_exists("test-user");
+check_user_exists("test-user")
+1
+BLAKE2B
+SELECT users.user_id, passwords.salt, passwords.password_hash, passwords.algorithm
+FROM passwords LEFT JOIN users ON users.user_id = passwords.user_id
+WHERE users.user_name = "test-user" LIMIT 1;
+user_id	salt	password_hash	algorithm
+1	0DBF112D0242598EB60C964B5D36F3FBF677FCE1DE4955F3E516E861EDF3037457F04B3149316023E5A8C768946D7B4CC5FCAF1A71E1BACE9EEBFF8CC77266D55339AB5EBBBFBB6ABB0EC8754F662F6AF67204650BF4F758FA7B7E4FACAA6019A174C582ED7A2997B57EF29B87DA72FC42C5AE7E869853321BF38B87F3753088	B7B551BA41FB4B8AD43432DEB6CB92757CFEEBB38BC83404BFE3E6D5307CAF32	BLAKE2B
+SELECT check_user_exists("test-user");
+check_user_exists("test-user")
+1
+SELECT set_password("BLAKE2B", (SELECT user_id FROM users WHERE user_name = "test-user"), "test-password-2");
+set_password("BLAKE2B", (SELECT user_id FROM users WHERE user_name = "test-user"), "test-password-2")
+1
+SELECT * FROM passwords;
+user_id	salt	password_hash	algorithm
+1	390F401710283E75E821383256DEC81A94322EB3E0F2268634D3A8F4FB69BBA5E8AE3849F2F283C68C9ECF0E7C17568787CE324A0E586E5090F29F6B93284689B7C0FA94DD4B6C9156BEF1611CF2C2AAC414428221BBD2DEEDED588F579DA3802101B64CA7EFB010E048DC0D09D4F53E7E11C0445DCA8E92A20400BABBD5FF25	4BD798E4F44AA0B8E74C08C42F3FA2B164C84F760346C6901DD4629363DA637D	BLAKE2B
+SELECT check_password("test-user", "test-password-2");
+check_password("test-user", "test-password-2")
+0
+SELECT * FROM passwords;
+user_id	salt	password_hash	algorithm
+1	390F401710283E75E821383256DEC81A94322EB3E0F2268634D3A8F4FB69BBA5E8AE3849F2F283C68C9ECF0E7C17568787CE324A0E586E5090F29F6B93284689B7C0FA94DD4B6C9156BEF1611CF2C2AAC414428221BBD2DEEDED588F579DA3802101B64CA7EFB010E048DC0D09D4F53E7E11C0445DCA8E92A20400BABBD5FF25	4BD798E4F44AA0B8E74C08C42F3FA2B164C84F760346C6901DD4629363DA637D	BLAKE2B
+SELECT add_email("test-user", "foo@bar.com");
+add_email("test-user", "foo@bar.com")
+1
+SELECT SQL_NO_CACHE COUNT(user_id) FROM users WHERE user_name = "test-user";
+COUNT(user_id)
+1
+SELECT SQL_NO_CACHE * FROM users;
+user_id	user_name
+1	test-user
+SELECT SQL_NO_CACHE check_user_exists("test-user");
+check_user_exists("test-user")
+1
+SELECT SQL_NO_CACHE check_user_exists("test-user-2");
+check_user_exists("test-user-2")
+0
+SELECT add_user("test-user-2", "test-password", "test@example.com");
+add_user("test-user-2", "test-password", "test@example.com")
+1
+SELECT add_user("test-user-2", "test-password", "test2@example.com");
+ERROR 45000: This user name is already used.
+SELECT * FROM users;
+user_id	user_name
+1	test-user
+2	test-user-2
+SELECT * FROM email_addresses;
+email_id	user_id	email_address
+1	NULL	test@example.com
+2	NULL	foo@bar.com
+3	NULL	test@example.com
+SELECT * FROM passwords;
+user_id	salt	password_hash	algorithm
+1	704CB6C65C6EE4C74A6BAF1D2B7F5C5B36145CAFB0D50025C750AE2A40AB2CF8D27AD77977A4BC724C10FFB271AD37C6F13D17C5CB1CED395B781B32597EB1E030E35A6C9287EE12AF96500D1D35E71784DDDFCFB72DEA8248FDAFE9383557D666BA2A73C39DC6E4CE319C0A5F233F596F1DC7462FDDB7D711ABCA3B24EE8EE3	9A59FCE9B1290FA532221D6394E8F0DA5A94B2A0BE794C50DAA41AF3CCDCFCC4	BLAKE2B
+SELECT SQL_NO_CACHE check_user_exists("test-user");
+check_user_exists("test-user")
+1
+SELECT SQL_NO_CACHE check_user_exists("test-user-2");
+check_user_exists("test-user-2")
+1
+SELECT SQL_NO_CACHE check_user_exists("non-existent-user");
+check_user_exists("non-existent-user")
+0
+SELECT check_password("test-user", "test-password");
+check_password("test-user", "test-password")
+0
+SELECT check_password("test-user", "test-password-2");
+check_password("test-user", "test-password-2")
+0
+SELECT check_password("test-user", "should-not-match");
+check_password("test-user", "should-not-match")
+0
