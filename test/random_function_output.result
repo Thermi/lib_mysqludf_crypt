@@ -1,0 +1,7 @@
+USE mysqludf_crypt_db;
+SELECT CHAR_LENGTH(UDF_RANDOM(123));
+CHAR_LENGTH(UDF_RANDOM(123))
+246
+SELECT CHAR_LENGTH(lib_mysqludf_crypt_random(123));
+CHAR_LENGTH(lib_mysqludf_crypt_random(123))
+246

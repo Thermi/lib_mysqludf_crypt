@@ -1,0 +1,6 @@
+# test file to make sure the length of the random function's output is correct
+USE mysqludf_crypt_db;
+
+SELECT CHAR_LENGTH(UDF_RANDOM(123));
+
+SELECT CHAR_LENGTH(lib_mysqludf_crypt_random(123));
