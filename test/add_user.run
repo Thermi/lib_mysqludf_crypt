@@ -1,0 +1,3 @@
+set +x
+./create_db.run
+mysqltest --defaults-file=mysqld_base_dir/testing_defaults.conf $@ -u thermi --result-file=add_user.result < add_user.test
