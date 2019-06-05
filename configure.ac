@@ -10,7 +10,7 @@ AC_CONFIG_HEADER(config.h)
 AC_DEFINE([CONFIG_H_INCLUDED], [], [defined if config.h included])
 
 # AM_INIT_AUTOMAKE(m4_esyscmd())
-AM_INIT_AUTOMAKE([-Wall -Werror foreign])
+AM_INIT_AUTOMAKE([-Wall foreign])
 m4_ifdef([AM_SILENT_RULES], [AM_SILENT_RULES])
 AC_USE_SYSTEM_EXTENSIONS
 
