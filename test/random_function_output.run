@@ -1,0 +1,2 @@
+set +x
+mysqltest --defaults-file=mysqld_base_dir/testing_defaults.conf --result-file=random_function_output.result $@ < random_function_output.test
