@@ -1,6 +1,25 @@
-SHELL := /bin/bash
+bin_PROGRAMS = check_constant_time
+AM_CFLAGS = $(CFLAGS) -march=x86-64 -mtune=generic -pipe -fstack-protector-strong \
+			-fno-plt -O2 -g3 -Wall -Werror -Wno-format-extra-args -DSTANDARD -DMYSQL_SERVER @MYSQL_CFLAGS@ \
+			-Wl,-O1,--sort-common,--as-needed,-z,relro,-z,now -fvar-tracking-assignments
+AM_CXXFLAGS = -DSTANDARD -DMYSQL_SERVER @MYSQL_CFLAGS@
+AM_LDFLAGS = -module -avoid-version -no-undefined -rpath @MYSQL_PLUGINDIR@ 
+
+check_constant_time_LDADD = ../src/lib_mysqludf_crypt.la
+
+# lib_LTADD = ../src/lib_mysqludf_crypt.la $(INTLLIBS)
+
+# check_constant_time_SOURCES = \
+# 	check_constant_time.c
+
+# check_constant_time_LIBBADD = \
+# 	../src/lib_mysqludf_crypt.la
+
+AM_CFLAGS += @botan_CFLAGS@ @botan_LIBS@ -I../src/
+
+SHELL = /bin/bash
 # Force test to be a target instead of shell-builtin
-.PHONY : *.test *.result *.run
+.PHONY: *.test *.result *.run
 
 # clean up these files too during make clean
 CLEANFILES=*.log *.reject
@@ -39,5 +58,8 @@ start_mariadb:
 
 stop_mariadb:
 	./stop_mariadb_user_mode.sh
+
+install_shared_object:
+	$(INSTALL) -m 755 $(REAL_SO_PATH) lib_mysqludf_crypt.so
 
 all: start_mariadb *.test stop_mariadb
