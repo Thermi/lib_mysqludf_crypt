@@ -17,9 +17,7 @@ check_constant_time_LDADD = ../src/lib_mysqludf_crypt.la
 
 AM_CFLAGS += @botan_CFLAGS@ @botan_LIBS@ -I../src/
 
-SHELL = /bin/bash
-# Force test to be a target instead of shell-builtin
-.PHONY: *.test *.result *.run
+#SHELL = /bin/bash
 
 # clean up these files too during make clean
 CLEANFILES=*.log *.reject
@@ -34,13 +32,13 @@ REAL_SO_PATH=`realpath ../src/.libs/lib_mysqludf_crypt.so`
 mysqltest:
 	@if test -z "$(MYSQLTEST)" ; then echo "mysqltest not found"; exit 1; fi
 
-*.result:
+%.result:
 	mysqltest $(MYSQLTEST_ARGS) --record --result-file=$@ < $(basename $@).test
 
-*.run: create_db.test
-	./$@ $(MYSQLTEST_ARGS)
+%.run: create_db.test
+	./$@
 
-*.test:
+%.test:
 	mysqltest $(MYSQLTEST_ARGS) --result-file=$(basename $@).result < $(@)
 
 create_db.test:
@@ -63,3 +61,5 @@ install_shared_object:
 	$(INSTALL) -m 755 $(REAL_SO_PATH) lib_mysqludf_crypt.so
 
 all: start_mariadb *.test stop_mariadb
+
+.PHONY: %.test %.result %.run create_db.test

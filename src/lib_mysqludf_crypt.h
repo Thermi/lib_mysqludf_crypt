@@ -87,5 +87,45 @@ struct base64_data_storage {
     size_t length;
 };
 
-#endif /* MYSQLUDF_CRYPT_H_ */
+DLLEXP my_bool lib_mysqludf_crypt_sha1_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_sha256_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_sha384_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_sha512_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_sha3_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_blake2b_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_argon2_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_scrypt_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_constant_time_compare_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_random_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_base64_encode_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_base64_decode_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
+DLLEXP my_bool lib_mysqludf_crypt_info_init(UDF_INIT *initid, UDF_ARGS *args, char *message);
 
+DLLEXP char *lib_mysqludf_crypt_sha1(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_sha256(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_sha384(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_sha512(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_sha3(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_blake2b(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_argon2(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_scrypt(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP long long lib_mysqludf_crypt_constant_time_compare(UDF_INIT *initid, UDF_ARGS *args,
+        char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_random(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_base64_encode(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_base64_decode(UDF_INIT *initid, UDF_ARGS *args,
+        char *result, unsigned long *length, char *is_null, char *error);
+DLLEXP char *lib_mysqludf_crypt_info(UDF_INIT *initid, UDF_ARGS *args,
+        char *is_null, char *error);
+
+#endif /* MYSQLUDF_CRYPT_H_ */
