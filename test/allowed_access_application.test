@@ -1,0 +1,45 @@
+USE mysqludf_crypt_db;
+
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SHA256("123");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SHA384("123");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SHA512("123");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SHA3("123");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_BLAE2B("123");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_ARGON2("123");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SCRYPT("123");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_BASE64_ENCODE("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_BASE64_DECODE("b");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL MYSQLUDF_CRYPT_MULTIHASH("SHA-256", "a", "b");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_RANDOM(123);
+
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_sha256("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_sha384("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_sha512("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_sha3("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_blake2b("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_argon2("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_scrypt("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_random(123);
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_base64_encode("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_base64_decode("a");

@@ -1,10 +1,10 @@
-#! /bin/bash
+#! /bin/bash -x
 
 set -e
 
 DEFAULT_ARGS="--defaults-file=mysqld_base_dir/testing_defaults.conf"
-mysqltest $DEFAULT_ARGS -u application --result-file disallowed_access_application.result < disallowed_access.test  -pabcde $1
-mysqltest $DEFAULT_ARGS -u admin_user --result-file disallowed_access_admin_user.result < disallowed_access.test  -pabcde $1
+mysqltest $DEFAULT_ARGS -u application --result-file disallowed_access_application.result < disallowed_access_application.test  -pabcde $@
+#mysqltest $DEFAULT_ARGS -u admin_user --result-file disallowed_access_admin_user.result < disallowed_access.test  -pabcde $1
 
-mysqltest $DEFAULT_ARGS -u application --result-file allowed_access_application.result < allowed_access.test  -pabcde $1
-mysqltest $DEFAULT_ARGS -u admin_user --result-file allowed_access_admin_user.result < allowed_access.test -pabcde $1
+mysqltest $DEFAULT_ARGS -u application --result-file allowed_access_application.result < allowed_access_application.test  -pabcde $@
+#mysqltest $DEFAULT_ARGS -u admin_user --result-file allowed_access_admin_user.result < allowed_access.test -pabcde $1

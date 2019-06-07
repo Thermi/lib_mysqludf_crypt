@@ -1,0 +1,61 @@
+
+USE mysqludf_crypt_db;
+
+--error ER_TABLEACCESS_DENIED_ERROR
+SELECT * FROM users;
+--error ER_TABLEACCESS_DENIED_ERROR
+SELECT * FROM passwords;
+--error ER_TABLEACCESS_DENIED_ERROR
+SELECT * FROM email_addresses;
+
+# TODO: add tests for UPDATE, INSERT, DROP
+
+--error ER_PROCACCESS_DENIED_ERROR
+CALL SET_PASSWORD("a", "b", "c");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL CHANGE_PASSWORD("a", "b", "c");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SHA256("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SHA384("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SHA512("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SHA3("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_BLAKE2B("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_ARGON2("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SCRYPT("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_SCRYPT("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_BASE64_ENCODE("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_BASE64_DECODE("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL MYSQLUDF_CRYPT_MULTIHASH("SHA-256", "a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL UDF_RANDOM(123);
+
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_sha256("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_sha384("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_sha512("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_sha3("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_blake2b("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_argon2("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_scrypt("a", "a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_random(123);
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_base64_encode("a");
+--error ER_PROCACCESS_DENIED_ERROR
+CALL lib_mysqludf_crypt_base64_decode("a");

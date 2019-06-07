@@ -1,0 +1,55 @@
+USE mysqludf_crypt_db;
+SELECT * FROM users;
+ERROR 42000: SELECT command denied to user 'application'@'localhost' for table 'users'
+SELECT * FROM passwords;
+ERROR 42000: SELECT command denied to user 'application'@'localhost' for table 'passwords'
+SELECT * FROM email_addresses;
+ERROR 42000: SELECT command denied to user 'application'@'localhost' for table 'email_addresses'
+CALL SET_PASSWORD("a", "b", "c");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.SET_PASSWORD'
+CALL CHANGE_PASSWORD("a", "b", "c");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.CHANGE_PASSWORD'
+CALL UDF_SHA256("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_SHA256'
+CALL UDF_SHA384("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_SHA384'
+CALL UDF_SHA512("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_SHA512'
+CALL UDF_SHA3("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_SHA3'
+CALL UDF_BLAKE2B("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_BLAKE2B'
+CALL UDF_ARGON2("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_ARGON2'
+CALL UDF_SCRYPT("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_SCRYPT'
+CALL UDF_SCRYPT("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_SCRYPT'
+CALL UDF_BASE64_ENCODE("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_BASE64_ENCODE'
+CALL UDF_BASE64_DECODE("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_BASE64_DECODE'
+CALL MYSQLUDF_CRYPT_MULTIHASH("SHA-256", "a", "a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.MYSQLUDF_CRYPT_MULTIHASH'
+CALL UDF_RANDOM(123);
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.UDF_RANDOM'
+CALL lib_mysqludf_crypt_sha256("a", "a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.lib_mysqludf_crypt_sha256'
+CALL lib_mysqludf_crypt_sha384("a", "a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.lib_mysqludf_crypt_sha384'
+CALL lib_mysqludf_crypt_sha512("a", "a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.lib_mysqludf_crypt_sha512'
+CALL lib_mysqludf_crypt_sha3("a", "a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.lib_mysqludf_crypt_sha3'
+CALL lib_mysqludf_crypt_blake2b("a", "a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.lib_mysqludf_crypt_blake2b'
+CALL lib_mysqludf_crypt_argon2("a", "a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.lib_mysqludf_crypt_argon2'
+CALL lib_mysqludf_crypt_scrypt("a", "a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.lib_mysqludf_crypt_scrypt'
+CALL lib_mysqludf_crypt_random(123);
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.lib_mysqludf_crypt_random'
+CALL lib_mysqludf_crypt_base64_encode("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.lib_mysqludf_crypt_base64_encode'
+CALL lib_mysqludf_crypt_base64_decode("a");
+ERROR 42000: execute command denied to user 'application'@'localhost' for routine 'mysqludf_crypt_db.lib_mysqludf_crypt_base64_decode'

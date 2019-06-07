@@ -60,6 +60,6 @@ stop_mariadb:
 install_shared_object:
 	$(INSTALL) -m 755 $(REAL_SO_PATH) lib_mysqludf_crypt.so
 
-all: start_mariadb *.test stop_mariadb
+all: start_mariadb *.run stop_mariadb
 
 .PHONY: %.test %.result %.run create_db.test
