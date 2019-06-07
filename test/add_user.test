@@ -5,7 +5,7 @@ SELECT delete_user("test-user");
 SELECT add_user("test-user", "test-password", "test@example.com");
 SELECT 1 = true;
 SELECT user_name FROM users WHERE user_name = "test-user" LIMIT 1;
-SELECT * FROM passwords;
+
 SELECT check_user_exists("test-user");
 SELECT check_password("test-user", "test-password");
 IF (! `SELECT check_password("test-user", "test-password")`) {
@@ -26,15 +26,15 @@ IF (! `SELECT MYSQLUDF_CRYPT_CONSTANT_TIME_COMPARE("$hash", "$calculated_hash")`
     SIGNAL '25000' SET MESSAGE_TEXT="Failed to verify hashes.";
 }
 
-SELECT users.user_id, passwords.salt, passwords.password_hash, passwords.algorithm
-    FROM passwords LEFT JOIN users ON users.user_id = passwords.user_id
-    WHERE users.user_name = "test-user" LIMIT 1;
+#SELECT users.user_id, passwords.salt, passwords.password_hash, passwords.algorithm
+#    FROM passwords LEFT JOIN users ON users.user_id = passwords.user_id
+#    WHERE users.user_name = "test-user" LIMIT 1;
 
 SELECT check_user_exists("test-user");
 SELECT set_password("BLAKE2B", (SELECT user_id FROM users WHERE user_name = "test-user"), "test-password-2");
-SELECT * FROM passwords;
+
 SELECT check_password("test-user", "test-password-2");
-SELECT * FROM passwords;
+
 SELECT add_email("test-user", "foo@bar.com");
 SELECT SQL_NO_CACHE COUNT(user_id) FROM users WHERE user_name = "test-user";
 SELECT SQL_NO_CACHE * FROM users;
@@ -48,20 +48,20 @@ SELECT add_user("test-user-2", "test-password", "test@example.com");
 SELECT add_user("test-user-2", "test-password", "test2@example.com");
 SELECT * FROM users;
 SELECT * FROM email_addresses;
-SELECT * FROM passwords;
+
 SELECT SQL_NO_CACHE check_user_exists("test-user");
 SELECT SQL_NO_CACHE check_user_exists("test-user-2");
 SELECT SQL_NO_CACHE check_user_exists("non-existent-user");
-SELECT * FROM passwords;
+
 SELECT check_password("test-user", "test-password");
-SELECT * FROM passwords;
+
 SELECT check_password("test-user", "test-password-2");
-SELECT * FROM passwords;
+
 SELECT check_password("test-user", "should-not-match");
-SELECT * FROM passwords;
+
 SELECT check_password("test-user-2", "test-password");
-SELECT * FROM passwords;
+
 SELECT check_password("test-user-2", "test-password-2");
-SELECT * FROM passwords;
+
 SELECT check_password("test-user-2", "should-not-match");
-SELECT * FROM passwords;
+
