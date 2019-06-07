@@ -74,7 +74,7 @@ AC_ARG_WITH([botan],
 PKG_CHECK_MODULES(botan, [botan-2],
   [AC_SUBST(botan_CFLAGS)
    AC_SUBST(botan_LIBS)])
-AC_CONFIG_SUBDIRS([src])
+
 AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
 
 AC_OUTPUT
