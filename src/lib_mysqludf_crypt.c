@@ -554,8 +554,8 @@ extern "C" {
     }
 
     DLLEXP char *lib_mysqludf_crypt_info(UDF_INIT *initid, UDF_ARGS *args, char *is_null, char *error) {
-        char *return_message = malloc(strlen(LIBMYSQLUDF_CRYPT_VERSION)+1);
-        strncpy(return_message, LIBMYSQLUDF_CRYPT_VERSION, strlen(LIBMYSQLUDF_CRYPT_VERSION)+1);
+        char *return_message = malloc(strlen(PACKAGE_STRING)+1);
+        strncpy(return_message, PACKAGE_STRING, strlen(PACKAGE_STRING)+1);
         return return_message;
     }
 

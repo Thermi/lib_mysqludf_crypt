@@ -49,10 +49,6 @@ typedef long long longlong;
 #define LIB_MYSQLUDF_CRYPT_PROVIDER_ENV "LIB_MYSQLUDF_CRYPT_PROVIDER"
 #endif
 
-#ifndef LIBMYSQLUDF_CRYPT_VERSION
-#define LIBMYSQLUDF_CRYPT_VERSION "0.0.0"
-#endif
-
 /* Right now only botan is supported because the API of openssl is stupid
  * and gnutls doesn't have any API for the primitives yet
  */
