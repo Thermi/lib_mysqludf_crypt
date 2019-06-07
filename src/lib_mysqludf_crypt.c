@@ -503,13 +503,13 @@ extern "C" {
     }
 
     DLLEXP char *lib_mysqludf_crypt_sha512(UDF_INIT *initid, UDF_ARGS *args,
-        char *result, unsigned long *length, char *is_null, char *error){
+        char *result, unsigned long *length, char *is_null, char *error) {
         return hash_common_operation(initid, args, result, length, is_null, error);
     }
 
 
     DLLEXP char *lib_mysqludf_crypt_sha3(UDF_INIT *initid, UDF_ARGS *args,
-        char *result, unsigned long *length, char *is_null, char *error){
+        char *result, unsigned long *length, char *is_null, char *error) {
         return hash_common_operation(initid, args, result, length, is_null, error);
     }
 
