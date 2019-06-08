@@ -57,7 +57,7 @@ AX_MYSQL_BIN
 
 AC_ARG_WITH([botan],
   AC_HELP_STRING([--with-botan=@<:@ARG@:>@],
-    [user botan client library @<:@default=yes@:>@]
+    [use botan cryptographic library @<:@default=yes@:>@]
     ),
     [
       if test "$withval" = "no"; then
