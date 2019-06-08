@@ -80,3 +80,4 @@ packages/arch/libmysqludf-crypt/src
 .libs
 test/*.log
 test/*.reject
+test/check_constant_time
