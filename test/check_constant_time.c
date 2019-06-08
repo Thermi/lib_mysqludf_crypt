@@ -7,6 +7,29 @@
 #define BILLION  1000000000.0;
 
 // main function to find the execution time of a C program
+bool test(UDF_INIT *initid, UDF_ARGS *args, char message[MYSQL_ERRMSG_SIZE],
+    char error[MYSQL_ERRMSG_SIZE], char *is_null) {
+    my_bool ret;
+    double time_spent;
+    struct timespec start, end;
+
+    /* init initid and args */
+    clock_gettime(CLOCK_REALTIME, &start);
+    ret = lib_mysqludf_crypt_constant_time_compare_init(initid, args, message);
+    /* init and run */
+    ret = lib_mysqludf_crypt_constant_time_compare(initid, args, is_null, error);
+
+    clock_gettime(CLOCK_REALTIME, &end);
+    fprintf(stderr, "Comparison result: %d\n", ret);
+    // time_spent = end - start
+    time_spent = (end.tv_sec - start.tv_sec) +
+                        (end.tv_nsec - start.tv_nsec) / BILLION;
+
+    printf("Time elpased is %f seconds\n", time_spent);
+    return ret;
+
+}
+
 int main()
 {
     char message[MYSQL_ERRMSG_SIZE];
@@ -20,13 +43,14 @@ int main()
         false
     };
     char args_chars[2][4096];
+    char *args_pointers[2];
     long unsigned lengths_args[2] = {4096, 4096};
 
-    my_bool ret;
+    args_pointers[0] = args_chars[0];
+    args_pointers[1] = args_chars[1];
 
     enum Item_result arg_type_args[2] = {STRING_RESULT, STRING_RESULT};
 
-    struct timespec start, end;
     UDF_INIT initid = {
         .maybe_null = 0,
         .decimals = 0,
@@ -38,31 +62,29 @@ int main()
     UDF_ARGS args = { 
         .arg_count = 2,
         .lengths = lengths_args,
-        .args = (char **)args_chars,
+        .args = args_pointers,
         .maybe_null = null_chars,
         .arg_type = arg_type_args
     };
     
-    memset(message, 0, sizeof(message));
-    memset(message, 0, sizeof(error));
- 
-    memset(args_chars[0], 'a', 4096);
-    memset(args_chars[1], 'b', 4096);
+    for(uint64_t i=0; i<4096;i++) {
+        /* test 4096*a and 4096*b */
+        memset(message, 0, sizeof(message));
+        memset(message, 0, sizeof(error));
+     
+        memset(args_chars[0], 'a', 4096);
+        memset(args_chars[1], 'b', 4096);
 
 
-    /* init initid and args */
-    clock_gettime(CLOCK_REALTIME, &start);
-    ret = lib_mysqludf_crypt_constant_time_compare_init(&initid, &args, message);
-    /* init and run */
-    ret = lib_mysqludf_crypt_constant_time_compare(&initid, &args, is_null, error);
+        test(&initid, &args, message, error, is_null);
+        /* test 4096*a and 4095*a + 1*b */
 
-    clock_gettime(CLOCK_REALTIME, &end);
-    fprintf(stderr, "Comparison result: %d\n", ret);
-    // time_spent = end - start
-    double time_spent = (end.tv_sec - start.tv_sec) +
-                        (end.tv_nsec - start.tv_nsec) / BILLION;
+        memset(args_chars[0], 'a', 4096);
+        memset(args_chars[1], 'a', 4095);
+        args_chars[1][4095] = 'b';
 
-    printf("Time elpased is %f seconds", time_spent);
+        test(&initid, &args, message, error, is_null);        
+    }
 
     return 0;
 }
