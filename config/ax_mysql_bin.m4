@@ -39,7 +39,7 @@ AC_DEFUN([AX_MYSQL_BIN], [
   if test -f /etc/mysql/debian.cnf ; then
     MYSQL_ARGS="--defaults-file=/etc/mysql/debian.cnf"
   else
-    MYSQL_ARGS="-p"
+    MYSQL_ARGS=""
   fi
 
   if test -z "$withmysqlbin" -o "$withmysqlbin" = "yes"; then
