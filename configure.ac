@@ -4,7 +4,7 @@ AC_INIT([lib_mysqludf_crypt],[0.1],[you@example.com])
 
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_AUX_DIR(config)
-AC_CONFIG_MACRO_DIR(config)
+#AC_CONFIG_MACRO_DIR(m4)
 AC_CONFIG_HEADER(config.h)
 
 AC_DEFINE([CONFIG_H_INCLUDED], [], [defined if config.h included])
