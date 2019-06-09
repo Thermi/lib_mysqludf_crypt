@@ -4,7 +4,7 @@ AC_INIT([lib_mysqludf_crypt],[0.1],[you@example.com])
 
 AC_CONFIG_SRCDIR([Makefile.am])
 AC_CONFIG_AUX_DIR(config)
-#AC_CONFIG_MACRO_DIR(m4)
+AC_CONFIG_MACRO_DIR(config)
 AC_CONFIG_HEADER(config.h)
 
 AC_DEFINE([CONFIG_H_INCLUDED], [], [defined if config.h included])
@@ -70,10 +70,38 @@ AC_ARG_WITH([botan],
       fi
     ],
     [want_botan="yes"]
-  )
-PKG_CHECK_MODULES(botan, [botan-2],
-  [AC_SUBST(botan_CFLAGS)
-   AC_SUBST(botan_LIBS)])
+)
+
+AC_ARG_WITH([openssl],
+  AC_HELP_STRING([--with-openssl=@<:@ARG@:>@],
+    [use openssl cryptographic library (libcrypto) @<:@default=yes@:>@]
+    ),
+    [
+      if test "$withval" = "no"; then
+        want_openssl="no"
+      elif test "$withval" = "yes"; then
+        want_openssl="yes"
+      else
+        want_openssl="yes"
+        OPENSSL_CONFIG="$withval"
+      fi
+    ],
+    [want_openssl="yes"]
+)
+if test "x$want_botan" == "xyes"; then
+  PKG_CHECK_MODULES(botan, [botan-2],
+    [AC_SUBST(botan_CFLAGS)
+     AC_SUBST(botan_LIBS)])
+fi
+
+if test "x$want_openssl" == "xyes"; then
+  PKG_CHECK_MODULES(openssl, [openssl],
+    [AC_SUBST(openssl_CFLAGS)
+     AC_SUBST(openssl_LIBS)])
+fi
+
+AM_CONDITIONAL(USE_BOTAN, test x$botan = xtrue)
+AM_CONDITIONAL(USE_OPENSSL, test x$openssl = xtrue)
 
 AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
 
