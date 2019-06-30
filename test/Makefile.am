@@ -32,16 +32,17 @@ REAL_SO_PATH=`realpath ../src/.libs/lib_mysqludf_crypt.so`
 mysqltest:
 	@if test -z "$(MYSQLTEST)" ; then echo "mysqltest not found"; exit 1; fi
 
-%.result:
-	$(MYSQLTEST) $(MYSQLTEST_ARGS) --record --result-file=$@ < $(basename $@).test
+%.result: %.run
+
+#	$(MYSQLTEST) $(MYSQLTEST_ARGS) --record --result-file=$@ < $(basename $@).test
 
 %.run: create_db.test
 	./$@
 
-%.test:
-	$(MYSQLTEST) $(MYSQLTEST_ARGS) --result-file=$(basename $@).result < $(@)
+%.test: %.run
+#	$(MYSQLTEST) $(MYSQLTEST_ARGS) --result-file=$(basename $@).result < $(@)
 
-create_db.test:
+create_db.test: start_mariadb
 	$(MYSQLTEST) $(MYSQLTEST_ARGS) --result-file=create_db.result < create_db.test
 
 install_db:

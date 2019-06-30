@@ -59,22 +59,46 @@ AC_ARG_WITH([botan],
   AC_HELP_STRING([--with-botan=@<:@ARG@:>@],
     [use botan cryptographic library @<:@default=yes@:>@]
     ),
+  [
+    if test "$withval" = "no"; then
+      want_botan="true"
+    elif test "$withval" = "yes"; then
+      want_botan="false"
+    else
+      want_botan="true"
+    fi
+  ],
+  [want_botan="true"]
+)
+
+
+AC_ARG_WITH([botan-static],
+  AC_HELP_STRING([--botan-static=@<:@ARG@:>@],
+    [compile botan library in statically @<:@default=no@:>@]
+    ),
     [
       if test "$withval" = "no"; then
-        want_botan="no"
+        botan_static="false"
       elif test "$withval" = "yes"; then
-        want_botan="yes"
+        botan_static="true"
       else
-        want_botan="yes"
-        BOTAN_CONFIG="$withval"
+        botan_static="false"
       fi
     ],
-    [want_botan="yes"]
-  )
-PKG_CHECK_MODULES(botan, [botan-2],
-  [AC_SUBST(botan_CFLAGS)
-   AC_SUBST(botan_LIBS)])
+    [botan_static="true"]
+)
 
-AC_CONFIG_FILES([Makefile src/Makefile test/Makefile])
+if test "x$want_botan" == "xtrue"; then
+  PKG_CHECK_MODULES(botan, [botan-2],
+    [AC_SUBST(botan_CFLAGS)
+     AC_SUBST(botan_LIBS)])
+fi
+
+AM_CONDITIONAL(USE_BOTAN, test x$botan = xtrue)
+AM_CONDITIONAL(USE_BOTAN_STATIC, test x$botan_static = xtrue)
+
+AC_SUBST(SOURCE_DIR, [esyscmd(pwd)])
+
+AC_CONFIG_FILES([Makefile src/Makefile test/Makefile sql/Makefile])
 
 AC_OUTPUT
